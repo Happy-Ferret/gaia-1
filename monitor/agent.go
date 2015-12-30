@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"fmt"
 	"github.com/notyim/gaia/config"
 	"io/ioutil"
 	"log"
@@ -32,7 +33,6 @@ func (a *Agent) Collect() {
 	log.Printf("Collect data")
 
 	var wg sync.WaitGroup
-	log.Printf("Service %v", a.services)
 
 	for _, s := range a.services {
 		if s.Address != "" {
@@ -82,7 +82,7 @@ func (a *Agent) fetch(s *Service) StatusResult {
 		rs.Response.Status = resp.StatusCode
 		rs.Response.Duration = time.Since(start)
 		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("Address %s Body %s", s.Address, body)
+		rs.Response.Body = fmt.Sprintf("%s", body)
 		resp.Body.Close()
 	}
 	return rs

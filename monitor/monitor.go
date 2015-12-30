@@ -37,6 +37,7 @@ func Start() {
 	log.Printf("Start monitoring")
 	registerMonitor(agent, shutdown)
 
+	registerHttpServer(agent)
 }
 
 func registerSignal(shutdown chan struct{}) {
@@ -74,5 +75,7 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	}
 }
 
-func registerHttp() {
+func registerHttpServer(agent *Agent) {
+	h := NewHttpServer(agent)
+	h.Start()
 }

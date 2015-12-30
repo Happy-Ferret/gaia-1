@@ -16,6 +16,7 @@ type StatusResult struct {
 	Latency  int
 	Error    error
 	Response struct {
+		Body     string
 		Status   int
 		Duration time.Duration
 	}
