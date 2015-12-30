@@ -23,12 +23,10 @@ import (
 var monitorCmd = &cobra.Command{
 	Use:   "monitor",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `monitor in server or agent mode with.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Server mode can flush result to our backend. Agent mode
+can only run and forward stat to a server node`,
 	Run: func(cmd *cobra.Command, args []string) {
 		monitor.Start()
 	},
@@ -45,6 +43,6 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// monitorCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	monitorCmd.Flags().BoolP("mode", "m", false, "server or agent mode.")
 
 }

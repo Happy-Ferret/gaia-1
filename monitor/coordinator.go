@@ -13,5 +13,8 @@ func (c *Coordinator) Start() {
 	// @TODO
 	// Fetch data from source in a loop and notify agent channel about new data
 	// or notify agent channel about removing of data
-	c.AgentChan <- NewService("www.axcoto.com", "1")
+	for i := 0; i < 10; i++ {
+		c.AgentChan <- NewService("https://axcoto.com", "1")
+		c.AgentChan <- NewService("http://log.axcoto.com", "2")
+	}
 }

@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const (
+	CHECK_INTERVAL = 1000
+)
+
 // Main entry point for monitoring system
 func Start() {
 	log.Printf("Initalize...")
@@ -48,18 +52,27 @@ func registerSignal(shutdown chan struct{}) {
 
 func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	// Every 3 seconds
-	ticker := time.NewTicker(3000 * time.Millisecond)
+	ticker := time.NewTicker(CHECK_INTERVAL * time.Millisecond)
 
 	for {
-		agent.Collect()
+		// Run collect in go-routine to give back execution control to main thread
+		// so when we ctrl-c, it can be catched instantly and exit
+		go func() {
+			agent.Collect()
+		}()
 
 		select {
 		case s := <-shutdown:
 			log.Printf("Receive shutdown command %v. Will quit", s)
+			//@TODO cleanup when exiting
+			os.Exit(1)
 			return
 		case t := <-ticker.C:
 			log.Printf("Tick at %v", t)
 			continue
 		}
 	}
+}
+
+func registerHttp() {
 }

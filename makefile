@@ -13,25 +13,25 @@ default: prepare build
 build:
 	go build -o gaia -ldflags \
 		"-X main.Version=$(VERSION)" \
-		./cmd/gaia/gaia.go
+		./main.go
 
 # Build with race detector
 dev: prepare
 	go build -race -o gaia -ldflags \
 		"-X main.Version=$(VERSION)" \
-		./cmd/gaia/gaia.go
+		./main.go
 
 # Build linux 64-bit, 32-bit and arm architectures
 build-linux-bins: prepare
 	GOARCH=amd64 GOOS=linux go build -o gaia_linux_amd64 \
 								-ldflags "-X main.Version=$(VERSION)" \
-								./cmd/gaia/gaia.go
+								./main.go
 	GOARCH=386 GOOS=linux go build -o gaia_linux_386 \
 								-ldflags "-X main.Version=$(VERSION)" \
-								./cmd/gaia/gaia.go
+								./main.go
 	GOARCH=arm GOOS=linux go build -o gaia_linux_arm \
 								-ldflags "-X main.Version=$(VERSION)" \
-								./cmd/gaia/gaia.go
+								./main.go
 
 # Get dependencies and use gdm to checkout changesets
 prepare:

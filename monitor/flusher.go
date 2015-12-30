@@ -19,6 +19,6 @@ func NewFlusher() *Flusher {
 func (f *Flusher) Start() {
 	for {
 		r := <-f.DataChan
-		log.Printf("Will flush result %v", r)
+		log.Printf("Will flush result ", r)
 	}
 }

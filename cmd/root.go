@@ -23,17 +23,16 @@ import (
 )
 
 var cfgFile string
+var Version string
 
 // This represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "gaia",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Gaia version " + Version,
+	Long: `Gaia: NotyIM heart
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+NotyIM daemon to check and recording service status. It
+can run in two mode: server and agent`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

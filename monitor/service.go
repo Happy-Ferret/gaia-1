@@ -1,5 +1,9 @@
 package monitor
 
+import (
+	"time"
+)
+
 // A service is a logic unit that needs to be monitored.
 // It can be:
 // an URL, an Ip address
@@ -9,8 +13,12 @@ type Service struct {
 }
 
 type StatusResult struct {
-	Latency int
-	Status  int
+	Latency  int
+	Error    error
+	Response struct {
+		Status   int
+		Duration time.Duration
+	}
 }
 
 func NewService(Address, Id string) Service {
