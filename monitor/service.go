@@ -8,7 +8,12 @@ type Service struct {
 	Id      string
 }
 
-func NewService(Address, Id string) *Service {
-	s := &Service{Address, Id}
+type StatusResult struct {
+	Latency int
+	Status  int
+}
+
+func NewService(Address, Id string) Service {
+	s := Service{Address, Id}
 	return s
 }
