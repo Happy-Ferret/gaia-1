@@ -13,12 +13,12 @@ type Service struct {
 }
 
 type StatusResult struct {
-	Latency  int
-	Error    error
+	Service  *Service
 	Response struct {
 		Body     string
 		Status   int
 		Duration time.Duration
+		Error    error
 	}
 }
 

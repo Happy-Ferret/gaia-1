@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
+	//"time"
 )
 
 const (
@@ -16,7 +16,7 @@ func Start() {
 	log.Printf("Initalize...")
 	shutdown := make(chan struct{})
 
-	flusher := NewFlusher()
+	flusher := NewFlusher(nil)
 	go func() {
 		flusher.Start()
 	}()
@@ -53,14 +53,17 @@ func registerSignal(shutdown chan struct{}) {
 
 func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	// Every 3 seconds
-	ticker := time.NewTicker(CHECK_INTERVAL * time.Millisecond)
+	//ticker := time.NewTicker(CHECK_INTERVAL * time.Millisecond)
+	status := make(chan string)
 
 	for {
 		// Run collect in go-routine to give back execution control to main thread
 		// so when we ctrl-c, it can be catched instantly and exit
-		go func() {
+		go func(ch chan string) {
 			agent.Collect()
-		}()
+			log.Printf("Done collect")
+			ch <- "done"
+		}(status)
 
 		select {
 		case s := <-shutdown:
@@ -68,9 +71,16 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 			//@TODO cleanup when exiting
 			os.Exit(1)
 			return
-		case t := <-ticker.C:
-			log.Printf("Tick at %v", t)
-			continue
+		case s := <-status:
+			log.Printf("Get status %v", s)
+			if s == "done" {
+				continue
+			} else {
+				log.Fatalf("Bad signal %s", s)
+			}
+			//case t := <-ticker.C:
+			//	log.Printf("Tick at %v", t)
+			//	continue
 		}
 	}
 }
