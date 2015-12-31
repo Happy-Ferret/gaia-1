@@ -26,18 +26,13 @@ build-linux-bins: prepare
 	GOARCH=amd64 GOOS=linux go build -o gaia_linux_amd64 \
 								-ldflags "-X main.Version=$(VERSION)" \
 								./main.go
-	GOARCH=386 GOOS=linux go build -o gaia_linux_386 \
-								-ldflags "-X main.Version=$(VERSION)" \
-								./main.go
-	GOARCH=arm GOOS=linux go build -o gaia_linux_arm \
-								-ldflags "-X main.Version=$(VERSION)" \
-								./main.go
 
 # Get dependencies and use gdm to checkout changesets
 prepare:
 	go get ./...
-	go get github.com/sparrc/gdm
-	gdm restore
+
+sync:
+	rsync -azvp . axcoto:gaia
 
 # Run all docker containers necessary for unit tests
 docker-run:

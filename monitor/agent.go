@@ -12,7 +12,7 @@ import (
 
 const (
 	AGENT_CAPACITY    = 600
-	AGENT_BATCH_CHECK = 60
+	AGENT_BATCH_CHECK = 30
 )
 
 type Agent struct {
