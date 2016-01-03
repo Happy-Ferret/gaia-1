@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	//"time"
+	"github.com/yvasiyarov/gorelic"
 )
 
 const (
@@ -14,6 +15,9 @@ const (
 // Main entry point for monitoring system
 func Start() {
 	log.Printf("Initalize...")
+
+	registerNewRelic()
+
 	shutdown := make(chan struct{})
 
 	flusher := NewFlusher(nil)
@@ -37,7 +41,7 @@ func Start() {
 	log.Printf("Start monitoring")
 	registerMonitor(agent, shutdown)
 
-	registerHttpServer(agent)
+	go registerHttpServer(agent)
 }
 
 func registerSignal(shutdown chan struct{}) {
@@ -88,4 +92,16 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 func registerHttpServer(agent *Agent) {
 	h := NewHttpServer(agent)
 	h.Start()
+}
+
+func registerNewRelic() {
+	agent := gorelic.NewAgent()
+	agent.Verbose = true
+	agent.NewrelicLicense = os.Getenv("NEWRELIC_LICENSE")
+	log.Printf("NRL %s", agent.NewrelicLicense)
+	agent.NewrelicName = "Gaia"
+	agent.CollectHTTPStat = true
+	agent.Verbose = true
+
+	agent.Run()
 }
