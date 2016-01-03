@@ -11,14 +11,17 @@ import (
 )
 
 const (
-	AGENT_CAPACITY    = 600
-	AGENT_BATCH_CHECK = 30
+	AGENT_CAPACITY     = 600
+	AGENT_BATCH_CHECK  = 30
+	AGENT_SIGNAL_START = "start"
+	AGENT_SIGNAL_STOP  = "stop"
 )
 
 type Agent struct {
 	Config     *config.Config
 	InChan     chan Service
 	out        chan StatusResult
+	sigChan    chan string
 	services   []Service
 	httpClient *http.Client
 }
@@ -28,6 +31,7 @@ func NewAgent(Out chan StatusResult) (*Agent, error) {
 	a.InChan = make(chan Service, AGENT_CAPACITY)
 	a.out = Out
 	a.services = make([]Service, AGENT_CAPACITY, AGENT_CAPACITY)
+	a.sigChan = make(chan string)
 
 	tr := &http.Transport{
 		//TLSClientConfig:    &tls.Config{RootCAs: pool},
@@ -56,12 +60,11 @@ func (a *Agent) Collect() {
 		}
 
 		wg.Add(1)
-		log.Printf("Fetch batch %d", i)
 		go func(batch []Service) {
 			defer wg.Done()
 			for _, s1 := range batch {
 				if s1.Address != "" {
-					log.Printf("Fecth for %s", s1.Address)
+					log.Printf("Fetch for %s", s1.Address)
 					a.out <- a.fetch(&s1)
 				}
 			}
@@ -73,10 +76,20 @@ func (a *Agent) Collect() {
 func (a *Agent) Start() {
 	var total = 0
 	for {
-		s := <-a.InChan
-		a.services[total] = s
-		total += 1
+		select {
+		case s := <-a.InChan:
+			a.services[total] = s
+			total += 1
+		case s := <-a.sigChan:
+			if s == AGENT_SIGNAL_STOP {
+				break
+			}
+		}
 	}
+}
+
+func (a *Agent) Stop() {
+	a.sigChan <- AGENT_SIGNAL_STOP
 }
 
 func (a *Agent) fetch(s *Service) StatusResult {
