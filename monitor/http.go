@@ -6,13 +6,15 @@ import (
 	"net/http"
 )
 
-type HttpServer struct {
+// HTTPServer represents internal http server
+type HTTPServer struct {
 	agent *Agent
 	r     *mux.Router
 }
 
-func NewHttpServer(agent *Agent) *HttpServer {
-	s := &HttpServer{
+// NewHTTPServer create a HttpServer struct
+func NewHTTPServer(agent *Agent) *HTTPServer {
+	s := &HTTPServer{
 		agent: agent,
 		r:     mux.NewRouter(),
 	}
@@ -20,7 +22,8 @@ func NewHttpServer(agent *Agent) *HttpServer {
 	return s
 }
 
-func (s *HttpServer) Start() {
+// Start run http server
+func (s *HTTPServer) Start() {
 	http.ListenAndServe("127.0.0.1:23501", s.r)
 }
 

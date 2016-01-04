@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
+// Flusher represents a flusher that flushs data to a storage backend
 type Flusher struct {
 	DataChan chan StatusResult
 	Size     int
 	client   client.Client
 }
 
+// NewFlusher creata a flusher struct
 func NewFlusher(c client.Client) *Flusher {
 	f := &Flusher{}
 	f.Size = 1000
@@ -28,6 +30,7 @@ func NewFlusher(c client.Client) *Flusher {
 	return f
 }
 
+// Start accepts incoming data from its own data channel and flush to backend
 func (f *Flusher) Start() {
 	var totalPoint = 0
 	var bp client.BatchPoints
@@ -44,16 +47,16 @@ func (f *Flusher) Start() {
 		r := <-f.DataChan
 
 		tags := map[string]string{
-			"ServiceId": r.Service.Id,
+			"ServiceId": r.Service.ID,
 		}
 		fields := map[string]interface{}{
 			"Duration": float64(r.Response.Duration / time.Millisecond),
 			"Status":   r.Response.Status,
-			"Body":     r.Response.Body,
 		}
 		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
 		bp.AddPoint(pt)
-		totalPoint += 1
+
+		totalPoint++
 
 		if totalPoint >= 500 {
 			if err := f.client.Write(bp); err != nil {

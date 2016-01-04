@@ -8,11 +8,12 @@ import (
 	"github.com/yvasiyarov/gorelic"
 )
 
+// Monitor constants
 const (
-	CHECK_INTERVAL = 1000
+	CheckInterval = 1000 // time interval between checks
 )
 
-// Main entry point for monitoring system
+// Start is the main entry point for monitoring system
 func Start() {
 	log.Printf("Initalize...")
 
@@ -41,7 +42,7 @@ func Start() {
 	log.Printf("Start monitoring")
 	registerMonitor(agent, shutdown)
 
-	go registerHttpServer(agent)
+	go registerHTTPServer(agent)
 }
 
 func registerSignal(shutdown chan struct{}) {
@@ -57,7 +58,7 @@ func registerSignal(shutdown chan struct{}) {
 
 func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	// Every 3 seconds
-	//ticker := time.NewTicker(CHECK_INTERVAL * time.Millisecond)
+	//ticker := time.NewTicker(CheckInterval * time.Millisecond)
 	status := make(chan string)
 
 	for {
@@ -89,8 +90,8 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	}
 }
 
-func registerHttpServer(agent *Agent) {
-	h := NewHttpServer(agent)
+func registerHTTPServer(agent *Agent) {
+	h := NewHTTPServer(agent)
 	h.Start()
 }
 

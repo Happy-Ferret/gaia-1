@@ -6,15 +6,18 @@ import (
 	"os"
 )
 
+// Coordinator accepts invoming data and forward to Agent channel for processing
 type Coordinator struct {
 	AgentChan chan Service
 }
 
+// NewCoordinator create a coordinator with specified agent channel
 func NewCoordinator(agentChan chan Service) *Coordinator {
 	c := &Coordinator{agentChan}
 	return c
 }
 
+// Start accepts incoming data and forward to agent channel
 func (c *Coordinator) Start() {
 	// @TODO
 	// Fetch data from source in a loop and notify agent channel about new data

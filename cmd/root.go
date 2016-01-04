@@ -23,12 +23,11 @@ import (
 )
 
 var cfgFile string
-var Version string
 
 // This represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "gaia",
-	Short: "Gaia version " + Version,
+	Short: "Gaia",
 	Long: `Gaia: NotyIM heart
 
 NotyIM daemon to check and recording service status. It

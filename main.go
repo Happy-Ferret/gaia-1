@@ -19,6 +19,8 @@ import (
 	"log"
 )
 
+// Gaia version
+//	-ldflags "-X main.Version=`git describe --always --tags`"
 var Version string
 
 func main() {

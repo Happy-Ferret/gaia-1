@@ -10,13 +10,15 @@ import (
 	"time"
 )
 
+// Agent constants.
 const (
-	AGENT_CAPACITY     = 600
-	AGENT_BATCH_CHECK  = 30
-	AGENT_SIGNAL_START = "start"
-	AGENT_SIGNAL_STOP  = "stop"
+	AgentCapacity    = 600     // How many job agent can handle
+	AgentBatchCheck  = 30      // How many check run in same go-routine
+	AgentSignalStart = "start" // signal start string
+	AgentSignalStop  = "stop"  // signal stop string
 )
 
+// Agent represent an agent that run checks
 type Agent struct {
 	Config     *config.Config
 	InChan     chan Service
@@ -26,11 +28,12 @@ type Agent struct {
 	httpClient *http.Client
 }
 
+// NewAgent create an agent with passing Output channel
 func NewAgent(Out chan StatusResult) (*Agent, error) {
 	a := &Agent{}
-	a.InChan = make(chan Service, AGENT_CAPACITY)
+	a.InChan = make(chan Service, AgentCapacity)
 	a.out = Out
-	a.services = make([]Service, AGENT_CAPACITY, AGENT_CAPACITY)
+	a.services = make([]Service, AgentCapacity, AgentCapacity)
 	a.sigChan = make(chan string)
 
 	tr := &http.Transport{
@@ -47,16 +50,18 @@ func NewAgent(Out chan StatusResult) (*Agent, error) {
 	return a, nil
 }
 
+// Collect run check and record result
 func (a *Agent) Collect() {
 	log.Printf("Collect data")
+	services := a.services
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < AGENT_CAPACITY/AGENT_BATCH_CHECK; i++ {
-		j := i * AGENT_BATCH_CHECK
-		k := j + AGENT_BATCH_CHECK + 1
-		if k >= AGENT_CAPACITY {
-			k = AGENT_CAPACITY
+	for i := 0; i < AgentCapacity/AgentBatchCheck; i++ {
+		j := i * AgentBatchCheck
+		k := j + AgentBatchCheck + 1
+		if k >= AgentCapacity {
+			k = AgentCapacity
 		}
 
 		wg.Add(1)
@@ -68,28 +73,30 @@ func (a *Agent) Collect() {
 					a.out <- a.fetch(&s1)
 				}
 			}
-		}(a.services[j:k])
+		}(services[j:k])
 	}
 	wg.Wait()
 }
 
+// Start accepts data from input and sig channel for control flow
 func (a *Agent) Start() {
 	var total = 0
 	for {
 		select {
 		case s := <-a.InChan:
 			a.services[total] = s
-			total += 1
+			total++
 		case s := <-a.sigChan:
-			if s == AGENT_SIGNAL_STOP {
+			if s == AgentSignalStop {
 				break
 			}
 		}
 	}
 }
 
+// Stop signals agent to stop
 func (a *Agent) Stop() {
-	a.sigChan <- AGENT_SIGNAL_STOP
+	a.sigChan <- AgentSignalStop
 }
 
 func (a *Agent) fetch(s *Service) StatusResult {
