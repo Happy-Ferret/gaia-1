@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+const (
+	// FlushThreshold is the point we need to reach before flushing to storage
+	// a smaller value mean more frequently write
+	FlushThreshold = 5
+)
+
 // Flusher represents a flusher that flushs data to a storage backend
 type Flusher struct {
 	DataChan chan StatusResult
@@ -56,9 +62,12 @@ func (f *Flusher) Start() {
 		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
 		bp.AddPoint(pt)
 
+		//pb, _ := client.NewPoint("http_response_body", tags, fields, time.Now())
+		//bp.AddPoint(pt)
+
 		totalPoint++
 
-		if totalPoint >= 500 {
+		if totalPoint >= FlushThreshold {
 			if err := f.client.Write(bp); err != nil {
 				log.Printf("Fail to flush to InfluxDB %v", err)
 			} else {

@@ -13,7 +13,7 @@ import (
 // Agent constants.
 const (
 	AgentCapacity    = 600     // How many job agent can handle
-	AgentBatchCheck  = 30      // How many check run in same go-routine
+	AgentBatchCheck  = 2       // How many check run in same go-routine
 	AgentSignalStart = "start" // signal start string
 	AgentSignalStop  = "stop"  // signal stop string
 )

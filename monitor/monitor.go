@@ -1,11 +1,11 @@
 package monitor
 
 import (
+	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
 	"os/signal"
-	//"time"
-	"github.com/yvasiyarov/gorelic"
+	"time"
 )
 
 // Monitor constants
@@ -65,8 +65,11 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 		// Run collect in go-routine to give back execution control to main thread
 		// so when we ctrl-c, it can be catched instantly and exit
 		go func(ch chan string) {
+			start := time.Now()
 			agent.Collect()
-			log.Printf("Done collect")
+			d := time.Since(start)
+			// @TODO log out internal stat
+			log.Printf("Done collect in %v", d)
 			ch <- "done"
 		}(status)
 
