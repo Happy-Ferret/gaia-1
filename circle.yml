@@ -17,7 +17,7 @@ test:
   override:
     - test -z "$(gofmt -s -l . | tee /dev/stderr)"
     - go vet ./...
-    #- test -z "$(golint ./... | tee /dev/stderr)"
+    - test -z "$(golint ./... | tee /dev/stderr)"
     #- go test -race -test.v ./...:
     - go test -test.v ./...:
         timeout: 600
