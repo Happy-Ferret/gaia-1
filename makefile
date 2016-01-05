@@ -32,7 +32,7 @@ prepare:
 	go get ./...
 
 sync:
-	rsync -azvp . axcoto:gaia
+	rsync -azvp --exclude '.git' . p-axcoto:gaia
 
 # Run all docker containers necessary for unit tests
 docker-run:
