@@ -19,8 +19,8 @@ import (
 	"log"
 )
 
-// Gaia version
-//	-ldflags "-X main.Version=`git describe --always --tags`"
+// Version of gaia, inject from build w/
+//    -ldflags "-X main.Version=`git describe --always --tags`"
 var Version string
 
 func main() {
