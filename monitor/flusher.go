@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"github.com/influxdb/influxdb/client/v2"
+	"github.com/notyim/gaia/config"
 	"log"
 	"time"
 )
@@ -9,7 +10,7 @@ import (
 const (
 	// FlushThreshold is the point we need to reach before flushing to storage
 	// a smaller value mean more frequently write
-	FlushThreshold = 5
+	FlushThreshold = 50
 )
 
 // Flusher represents a flusher that flushs data to a storage backend
@@ -17,18 +18,21 @@ type Flusher struct {
 	DataChan chan StatusResult
 	Size     int
 	client   client.Client
+	config   *config.Config
 }
 
 // NewFlusher creata a flusher struct
-func NewFlusher(c client.Client) *Flusher {
-	f := &Flusher{}
+func NewFlusher(config *config.Config, c client.Client) *Flusher {
+	f := &Flusher{
+		config: config,
+	}
 	f.Size = 1000
 	f.DataChan = make(chan StatusResult, f.Size)
 	if c == nil {
 		c, _ = client.NewHTTPClient(client.HTTPConfig{
-			Addr:     "http://10.8.0.1:8086",
-			Username: "root",
-			Password: "root",
+			Addr:     config.InfluxdbHost,
+			Username: config.InfluxdbUsername,
+			Password: config.InfluxdbPassword,
 		})
 	}
 	f.client = c
@@ -45,7 +49,7 @@ func (f *Flusher) Start() {
 		//@TODO write into influxdb
 		if totalPoint == 0 {
 			bp, _ = client.NewBatchPoints(client.BatchPointsConfig{
-				Database:  "notyim",
+				Database:  f.config.InfluxdbDb,
 				Precision: "s",
 			})
 		}
@@ -58,7 +62,13 @@ func (f *Flusher) Start() {
 		fields := map[string]interface{}{
 			"Duration": float64(r.Response.Duration / time.Millisecond),
 			"Status":   r.Response.Status,
+			"Body":     r.Response.Body,
 		}
+
+		if nil != r.Response.Error {
+			fields["Error"] = r.Response.Error
+		}
+
 		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
 		bp.AddPoint(pt)
 
