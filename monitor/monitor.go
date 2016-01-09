@@ -20,7 +20,7 @@ func Start() {
 
 	log.Printf("Initalize...")
 
-	registerNewRelic()
+	//registerNewRelic()
 
 	shutdown := make(chan struct{})
 

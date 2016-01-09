@@ -54,8 +54,8 @@ func (f *Flusher) Start() {
 				Precision: "s",
 			})
 		}
-
 		r := <-f.DataChan
+		log.Printf("Got data %v", r.Response.Status)
 
 		tags := map[string]string{
 			"ServiceId": r.Service.ID,
@@ -72,6 +72,7 @@ func (f *Flusher) Start() {
 
 		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
 		bp.AddPoint(pt)
+		log.Printf("Add point %v", r.Response.Status)
 
 		//pb, _ := client.NewPoint("http_response_body", tags, fields, time.Now())
 		//bp.AddPoint(pt)

@@ -23,9 +23,13 @@ func (c *Coordinator) Start() {
 	// @TODO
 	// Fetch data from source in a loop and notify agent channel about new data
 	// or notify agent channel about removing of data
-	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 3000)
-	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 3000)
 
+	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 300)
+	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 300)
+	c.bench()
+}
+
+func (c *Coordinator) bench() {
 	file, err := os.Open("./url")
 	if err != nil {
 		log.Fatal(err)

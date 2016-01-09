@@ -92,7 +92,8 @@ func (a *Agent) destroyWorkers() {
 }
 
 func (a *Agent) newWorker(s *core.Service, ch chan string) error {
-	timer := time.NewTicker(time.Duration(s.Interval) * time.Millisecond)
+	//timer := time.NewTicker(time.Duration(s.Interval) * time.Millisecond)
+	timer := time.NewTicker(time.Second * 10)
 
 	// Get first check instantly :)
 	go func() {
@@ -100,15 +101,19 @@ func (a *Agent) newWorker(s *core.Service, ch chan string) error {
 		a.out <- a.fetch(s)
 	}()
 
-	select {
-	case t := <-timer.C:
-		log.Printf("Fetch for %s at %v", s.Address, t)
-		// @TODO error handle and logging with Raven maybe?
-		a.out <- a.fetch(s)
-	case action := <-ch:
-		// @TODO more action here
-		log.Println("Got signal %s Quit worker service %s", action, s.Address)
-		break
+Loop:
+	for {
+		select {
+		case t := <-timer.C:
+			log.Printf("Fetch for %s at %s", s.Address, t)
+			// @TODO error handle and logging with Raven maybe?
+			a.out <- a.fetch(s)
+			log.Printf("Fetch for %s done %s", s.Address, t)
+		case action := <-ch:
+			// @TODO more action here
+			log.Println("Got signal %s Quit worker service %s", action, s.Address)
+			break Loop
+		}
 	}
 	return nil
 }
