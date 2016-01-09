@@ -94,6 +94,12 @@ func (a *Agent) destroyWorkers() {
 func (a *Agent) newWorker(s *core.Service, ch chan string) error {
 	timer := time.NewTicker(time.Duration(s.Interval) * time.Millisecond)
 
+	// Get first check instantly :)
+	go func() {
+		log.Printf("Trigger first check for %s at %v", s.Address, time.Now())
+		a.out <- a.fetch(s)
+	}()
+
 	select {
 	case t := <-timer.C:
 		log.Printf("Fetch for %s at %v", s.Address, t)
@@ -134,6 +140,6 @@ func (a *Agent) fetch(s *core.Service) *core.HTTPMetric {
 		rs.Response.Body = fmt.Sprintf("%s", body)
 		resp.Body.Close()
 	}
-	log.Printf("%s: %v", s.Address, rs.Response)
+	log.Printf("%s: %v in %d\n", s.Address, rs.Response.Status, rs.Response.Duration)
 	return rs
 }
