@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	//"net/url"
+	"github.com/notyim/gaia/monitor/core"
 	"sync"
 	"testing"
 )
@@ -30,13 +31,13 @@ func testTools(code int, body string) *httptest.Server {
 }
 
 func Test_Collect(t *testing.T) {
-	out := make(chan StatusResult)
+	out := make(chan *core.HTTPMetric)
 	agent, _ := NewAgent(out)
 	go agent.Start()
 
 	server := testTools(201, "OK")
 	go func() {
-		agent.InChan <- NewService(server.URL, "1")
+		agent.InChan <- core.NewHTTPService(server.URL, "1", 10)
 	}()
 
 	agent.Stop()
@@ -50,6 +51,5 @@ func Test_Collect(t *testing.T) {
 		}
 		defer wg.Done()
 	}()
-	agent.Collect()
 	wg.Wait()
 }

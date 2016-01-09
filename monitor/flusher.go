@@ -3,6 +3,7 @@ package monitor
 import (
 	"github.com/influxdb/influxdb/client/v2"
 	"github.com/notyim/gaia/config"
+	"github.com/notyim/gaia/monitor/core"
 	"log"
 	"time"
 )
@@ -15,7 +16,7 @@ const (
 
 // Flusher represents a flusher that flushs data to a storage backend
 type Flusher struct {
-	DataChan chan StatusResult
+	DataChan chan *core.HTTPMetric
 	Size     int
 	client   client.Client
 	config   *config.Config
@@ -27,7 +28,7 @@ func NewFlusher(config *config.Config, c client.Client) *Flusher {
 		config: config,
 	}
 	f.Size = 1000
-	f.DataChan = make(chan StatusResult, f.Size)
+	f.DataChan = make(chan *core.HTTPMetric, f.Size)
 	if c == nil {
 		c, _ = client.NewHTTPClient(client.HTTPConfig{
 			Addr:     config.InfluxdbHost,
@@ -79,7 +80,7 @@ func (f *Flusher) Start() {
 
 		if totalPoint >= FlushThreshold {
 			if err := f.client.Write(bp); err != nil {
-				log.Printf("Fail to flush to InfluxDB %v", err)
+				log.Printf("Fail to flush to InfluxDB %s %v", f.config.InfluxdbHost, err)
 			} else {
 				log.Printf("Flush %d points", totalPoint)
 			}

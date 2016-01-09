@@ -1,11 +1,12 @@
 package monitor
 
 import (
+	"github.com/notyim/gaia/config"
 	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
 	"os/signal"
-	"time"
+	//"time"
 )
 
 // Monitor constants
@@ -15,13 +16,15 @@ const (
 
 // Start is the main entry point for monitoring system
 func Start() {
+	config := config.NewConfig()
+
 	log.Printf("Initalize...")
 
 	registerNewRelic()
 
 	shutdown := make(chan struct{})
 
-	flusher := NewFlusher(nil)
+	flusher := NewFlusher(config, nil)
 	go func() {
 		flusher.Start()
 	}()
@@ -59,36 +62,13 @@ func registerSignal(shutdown chan struct{}) {
 func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	// Every 3 seconds
 	//ticker := time.NewTicker(CheckInterval * time.Millisecond)
-	status := make(chan string)
-
 	for {
-		// Run collect in go-routine to give back execution control to main thread
-		// so when we ctrl-c, it can be catched instantly and exit
-		go func(ch chan string) {
-			start := time.Now()
-			agent.Collect()
-			d := time.Since(start)
-			// @TODO log out internal stat
-			log.Printf("Done collect in %v", d)
-			ch <- "done"
-		}(status)
-
 		select {
 		case s := <-shutdown:
 			log.Printf("Receive shutdown command %v. Will quit", s)
 			//@TODO cleanup when exiting
 			os.Exit(1)
 			return
-		case s := <-status:
-			log.Printf("Get status %v", s)
-			if s == "done" {
-				continue
-			} else {
-				log.Fatalf("Bad signal %s", s)
-			}
-			//case t := <-ticker.C:
-			//	log.Printf("Tick at %v", t)
-			//	continue
 		}
 	}
 }
