@@ -14,15 +14,17 @@ type Service struct {
 	Type     string // type of service: http, tcp, ttl...
 }
 
+type ResponseMetric struct {
+	Body     string
+	Status   int
+	Duration time.Duration
+	Error    error
+}
+
 // HTTPMetric represent check data of a service
 type HTTPMetric struct {
 	Service  *Service
-	Response struct {
-		Body     string
-		Status   int
-		Duration time.Duration
-		Error    error
-	}
+	Response ResponseMetric
 }
 
 // NewHTTPService creates a service struct

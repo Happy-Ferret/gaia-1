@@ -4,8 +4,9 @@ import (
 	"github.com/influxdb/influxdb/client/v2"
 	"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/monitor/core"
+	"github.com/notyim/gaia/monitor/writer"
 	"log"
-	"time"
+	//"time"
 )
 
 const (
@@ -20,6 +21,8 @@ type Flusher struct {
 	Size     int
 	client   client.Client
 	config   *config.Config
+
+	writers []writer.Flushable
 }
 
 // NewFlusher creata a flusher struct
@@ -38,54 +41,62 @@ func NewFlusher(config *config.Config, c client.Client) *Flusher {
 	}
 	f.client = c
 
+	// Register our writer plugin
+	f.writers = writer.RegisterAll(config)
+
 	return f
 }
 
 // Start accepts incoming data from its own data channel and flush to backend
 func (f *Flusher) Start() {
+	var bufferPoints []*core.HTTPMetric
 	var totalPoint = 0
-	var bp client.BatchPoints
 
 	for {
-		//@TODO write into influxdb
 		if totalPoint == 0 {
-			bp, _ = client.NewBatchPoints(client.BatchPointsConfig{
-				Database:  f.config.InfluxdbDb,
-				Precision: "s",
-			})
+			bufferPoints = make([]*core.HTTPMetric, FlushThreshold, FlushThreshold)
 		}
+
 		r := <-f.DataChan
-		log.Printf("Got data %v", r.Response.Status)
-
-		tags := map[string]string{
-			"ServiceId": r.Service.ID,
-		}
-		fields := map[string]interface{}{
-			"Duration": float64(r.Response.Duration / time.Millisecond),
-			"Status":   r.Response.Status,
-			"Body":     r.Response.Body,
-		}
-
-		if nil != r.Response.Error {
-			fields["Error"] = r.Response.Error
-		}
-
-		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
-		bp.AddPoint(pt)
-		log.Printf("Add point %v", r.Response.Status)
-
-		//pb, _ := client.NewPoint("http_response_body", tags, fields, time.Now())
-		//bp.AddPoint(pt)
-
+		log.Printf("Got point %v", r.Response.Status)
+		bufferPoints[totalPoint] = r
+		log.Printf("Add point %v to buffer", r.Response.Status)
 		totalPoint++
 
 		if totalPoint >= FlushThreshold {
-			if err := f.client.Write(bp); err != nil {
-				log.Printf("Fail to flush to InfluxDB %s %v", f.config.InfluxdbHost, err)
-			} else {
-				log.Printf("Flush %d points", totalPoint)
-			}
+			// Create a deep copy of current bufferPoint for flusing in background
+			flushPoints := make([]*core.HTTPMetric, totalPoint, FlushThreshold)
+			//for i, p := range bufferPoints {
+			//	flushPoints[i] = &core.HTTPMetric{
+			//		Service: &core.Service{
+			//			Address:  p.Service.Address,
+			//			ID:       p.Service.ID,
+			//			Interval: p.Service.Interval,
+			//			Type:     p.Service.Type,
+			//		},
+			//		Response: core.ResponseMetric{
+			//			Body:     p.Response.Body,
+			//			Status:   p.Response.Status,
+			//			Duration: p.Response.Duration,
+			//			Error:    p.Response.Error,
+			//		},
+			//	}
+			//}
+
+			t := copy(flushPoints, bufferPoints)
+			log.Printf("Copy %d point for flushing", t)
+			log.Printf("Buffer Point %v", bufferPoints)
+			log.Printf("Flush Point %v", flushPoints)
+			go f.Flush(flushPoints)
 			totalPoint = 0
 		}
+	}
+}
+
+// Flush writes metric points to all writer
+func (f *Flusher) Flush(points []*core.HTTPMetric) {
+	for i, w := range f.writers {
+		log.Printf("Start to write to %d:%s writers ", i, w.Name())
+		w.WriteBatch(points)
 	}
 }
