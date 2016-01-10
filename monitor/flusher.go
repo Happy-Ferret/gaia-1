@@ -11,7 +11,7 @@ import (
 const (
 	// FlushThreshold is the point we need to reach before flushing to storage
 	// a smaller value mean more frequently write
-	FlushThreshold = 50
+	FlushThreshold = 5
 )
 
 // Flusher represents a flusher that flushs data to a storage backend
