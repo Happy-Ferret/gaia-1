@@ -26,7 +26,7 @@ func (c *Coordinator) Start() {
 
 	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 300)
 	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 300)
-	c.bench()
+	//c.bench()
 }
 
 func (c *Coordinator) bench() {

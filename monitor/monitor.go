@@ -39,13 +39,14 @@ func Start() {
 		coordinator.Start()
 	}()
 
-	log.Printf("Register handle")
-	registerSignal(shutdown)
+	log.Printf("Register http server")
+	go registerHTTPServer(agent)
 
-	log.Printf("Start monitoring")
+	log.Printf("Register monitoring point")
 	registerMonitor(agent, shutdown)
 
-	go registerHTTPServer(agent)
+	log.Printf("Register signal handle")
+	registerSignal(shutdown)
 }
 
 func registerSignal(shutdown chan struct{}) {

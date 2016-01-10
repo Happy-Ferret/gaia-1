@@ -92,8 +92,8 @@ func (a *Agent) destroyWorkers() {
 }
 
 func (a *Agent) newWorker(s *core.Service, ch chan string) error {
-	//timer := time.NewTicker(time.Duration(s.Interval) * time.Millisecond)
-	timer := time.NewTicker(time.Second * 10)
+	timer := time.NewTicker(time.Duration(s.Interval) * time.Millisecond)
+	//timer := time.NewTicker(time.Second * 10)
 
 	// Get first check instantly :)
 	go func() {
