@@ -1,10 +1,14 @@
 package monitor
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/thoas/stats"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
+	"os"
 )
 
 // HTTPServer represents internal http server
@@ -20,13 +24,29 @@ func NewHTTPServer(agent *Agent) *HTTPServer {
 		r:     mux.NewRouter(),
 	}
 	s.r.HandleFunc("/", index)
+
+	stat := stats.New()
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		s, err := json.Marshal(stat.Data())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(s)
+	})
+	s.r.HandleFunc("/_stats", h)
+
 	return s
 }
 
 // Start run http server
 func (s *HTTPServer) Start() {
 	log.Printf("Start server bootstrap")
-	http.ListenAndServe("127.0.0.1:23501", s.r)
+	bind := "127.0.0.1:23501"
+	if cbind := os.Getenv("BIND"); cbind != "" {
+		bind = cbind
+	}
+	log.Println(http.ListenAndServe(bind, s.r))
 	log.Printf("Finish server bootstrap")
 }
 
