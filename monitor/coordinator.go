@@ -24,9 +24,9 @@ func (c *Coordinator) Start() {
 	// Fetch data from source in a loop and notify agent channel about new data
 	// or notify agent channel about removing of data
 
-	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 300)
-	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 300)
-	//c.bench()
+	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 2000)
+	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 2000)
+	c.bench()
 }
 
 func (c *Coordinator) bench() {
@@ -39,7 +39,7 @@ func (c *Coordinator) bench() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		url := scanner.Text()
-		c.AgentChan <- core.NewHTTPService(scanner.Text(), url, 3000)
+		c.AgentChan <- core.NewHTTPService(scanner.Text(), url, 10000)
 	}
 
 	if err := scanner.Err(); err != nil {
