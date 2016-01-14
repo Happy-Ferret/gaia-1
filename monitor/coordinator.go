@@ -26,7 +26,9 @@ func (c *Coordinator) Start() {
 
 	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 2000)
 	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 2000)
-	c.bench()
+	if s := os.Getenv("GAIA_BENCHMARK"); s != "" {
+		c.bench()
+	}
 }
 
 func (c *Coordinator) bench() {
