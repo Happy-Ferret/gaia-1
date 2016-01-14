@@ -23,9 +23,13 @@ func NewHTTPServer(agent *Agent) *HTTPServer {
 		agent: agent,
 		r:     mux.NewRouter(),
 	}
-	s.r.HandleFunc("/", index)
 
 	stat := stats.New()
+
+	//Wrap the main function into stats handler
+	s.r.Handle("/", stat.Handler(http.HandlerFunc(index)))
+
+	// Route to expose stats
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		s, err := json.Marshal(stat.Data())
@@ -35,6 +39,8 @@ func NewHTTPServer(agent *Agent) *HTTPServer {
 		w.Write(s)
 	})
 	s.r.HandleFunc("/_stats", h)
+
+	s.r.NotFoundHandler = stat.Handler(http.HandlerFunc(notFound))
 
 	return s
 }
@@ -52,4 +58,9 @@ func (s *HTTPServer) Start() {
 
 func index(resp http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(resp, "Gaia is running")
+}
+
+func notFound(resp http.ResponseWriter, req *http.Request) {
+	fmt.Fprintln(resp, "Gaia isn't able to serve your request")
+	resp.WriteHeader(http.StatusNotFound)
 }
