@@ -8,10 +8,10 @@ import (
 // It can be:
 // an URL, an Ip address
 type Service struct {
-	Address  string // address of service
-	ID       string // id of service
-	Interval int64  // interval to run check for this service
-	Type     string // type of service: http, tcp, ttl...
+	Address  string `json:"address"`  // address of service
+	ID       string `json:"id"`       // id of service
+	Interval int64  `json:"interval"` // interval to run check for this service
+	Type     string `json:"type"`     // type of service: http, tcp, ttl...
 }
 
 type ResponseMetric struct {
