@@ -1,16 +1,14 @@
 package monitor
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/thoas/stats"
-	"log"
+	"github.com/stretchr/testify/assert"
 	"net/http"
-	_ "net/http/pprof"
-
-	"github.com/notyim/gaia/monitor/router"
-	"os"
+	"net/http/httptest"
+	//"net/url"
+	"github.com/notyim/gaia/monitor/core"
+	"sync"
+	"testing"
 )
 
 // HTTPServer represents internal http server
@@ -30,10 +28,6 @@ func NewHTTPServer(agent *Agent) *HTTPServer {
 
 	//Wrap the main function into stats handler
 	s.r.Handle("/", stat.Handler(http.HandlerFunc(index)))
-	s.r.Handle("/monitor", stat.Handler(http.HandlerFunc(router.SaveMonitor))).Methods("POST")
-	s.r.Handle("/monitor/{id}", stat.Handler(http.HandlerFunc(router.UpdateMonitor))).Methods("PUT")
-	s.r.Handle("/monitor", stat.Handler(http.HandlerFunc(router.DeleteMonitor))).Methods("DELETE")
-	s.r.Handle("/service/{id}", stat.Handler(http.HandlerFunc(router.GetService))).Methods("GET")
 
 	// Route to expose stats
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
