@@ -27,5 +27,6 @@ func DeleteMonitor(resp http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(resp, "Gaia is running")
 }
 
-func GetService() {
+func GetService(resp http.ResponseWriter, req *http.Request) {
+
 }

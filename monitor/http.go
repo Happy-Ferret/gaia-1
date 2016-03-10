@@ -3,6 +3,7 @@ package monitor
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/thoas/stats"
 	"log"
@@ -58,7 +59,10 @@ func (s *HTTPServer) Start() {
 	if cbind := os.Getenv("BIND"); cbind != "" {
 		bind = cbind
 	}
-	log.Println(http.ListenAndServe(bind, s.r))
+
+	loggedRouter := handlers.LoggingHandler(os.Stdout, s.r)
+
+	log.Println(http.ListenAndServe(bind, loggedRouter))
 	log.Printf("Finish server bootstrap")
 }
 
