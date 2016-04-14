@@ -25,5 +25,5 @@ func RegisterAll(config *config.Config) []Flushable {
 	r := rethinkdb.NewWriter(config)
 	ws[1] = r
 
-	return ws[0:1]
+	return ws[0:2]
 }

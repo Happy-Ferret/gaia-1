@@ -14,6 +14,11 @@ type Config struct {
 	InfluxdbUsername string
 	InfluxdbPassword string
 	InfluxdbDb       string
+
+	RethinkDBHost string
+	RethinkDBUser string
+	RethinkDBPass string
+	RethinkDBName string
 }
 
 // NewConfig creates a configuration struct with a sane default value
@@ -54,6 +59,27 @@ func NewConfig() *Config {
 		c.InfluxdbDb = val
 	} else {
 		c.InfluxdbDb = "notyim"
+	}
+
+	if val := os.Getenv("RETHINKDB_HOST"); val != "" {
+		c.RethinkDBHost = val
+	} else {
+		c.InfluxdbDb = "127.0.0.1"
+	}
+	if val := os.Getenv("RETHINKDB_USER"); val != "" {
+		c.RethinkDBUser = val
+	} else {
+		c.InfluxdbDb = "127.0.0.1"
+	}
+	if val := os.Getenv("RETHINKDB_PASS"); val != "" {
+		c.RethinkDBPass = val
+	} else {
+		c.InfluxdbDb = "127.0.0.1"
+	}
+	if val := os.Getenv("RETHINKDB_NAME"); val != "" {
+		c.RethinkDBName = val
+	} else {
+		c.InfluxdbDb = "127.0.0.1"
 	}
 
 	return c

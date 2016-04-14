@@ -54,7 +54,7 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 		fields := map[string]interface{}{
 			"Duration": float64(p.Response.Duration / time.Millisecond),
 			"Status":   p.Response.Status,
-			"Body":     p.Response.Body,
+			//"Body":     p.Response.Body,
 		}
 
 		if nil != p.Response.Error {

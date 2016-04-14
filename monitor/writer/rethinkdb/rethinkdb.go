@@ -3,6 +3,7 @@ package rethinkdb
 import (
 	r "github.com/dancannon/gorethink"
 
+	"fmt"
 	"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/monitor/core"
 	"log"
@@ -41,8 +42,8 @@ func NewWriter(config *config.Config) *Writer {
 	f.Size = 1000
 	f.DataChan = make(chan *core.HTTPMetric, f.Size)
 	s, err := r.Connect(r.ConnectOpts{
-		Address:  "127.0.0.1:28015",
-		Database: "notyim",
+		Address:  fmt.Sprintf("%s:28015", config.RethinkDBHost),
+		Database: config.RethinkDBName,
 		MaxIdle:  10,
 		MaxOpen:  10,
 	})
