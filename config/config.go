@@ -16,6 +16,7 @@ type Config struct {
 	InfluxdbDb       string
 
 	RethinkDBHost string
+	RethinkDBPort string
 	RethinkDBUser string
 	RethinkDBPass string
 	RethinkDBName string
@@ -80,6 +81,11 @@ func NewConfig() *Config {
 		c.RethinkDBName = val
 	} else {
 		c.InfluxdbDb = "127.0.0.1"
+	}
+	if val := os.Getenv("RETHINKDB_PORT"); val != "" {
+		c.RethinkDBPort = val
+	} else {
+		c.RethinkDBPort = "28015"
 	}
 
 	return c

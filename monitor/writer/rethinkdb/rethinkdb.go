@@ -42,10 +42,12 @@ func NewWriter(config *config.Config) *Writer {
 	f.Size = 1000
 	f.DataChan = make(chan *core.HTTPMetric, f.Size)
 	s, err := r.Connect(r.ConnectOpts{
-		Address:  fmt.Sprintf("%s:28015", config.RethinkDBHost),
+		Address:  fmt.Sprintf("%s:%s", config.RethinkDBHost, config.RethinkDBPort),
 		Database: config.RethinkDBName,
 		MaxIdle:  10,
 		MaxOpen:  10,
+		Username: config.RethinkDBUser,
+		Password: config.RethinkDBPass,
 	})
 	if err != nil {
 		log.Fatalln("Cannot connec to RethinkDB", err.Error())
