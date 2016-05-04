@@ -65,22 +65,20 @@ func NewConfig() *Config {
 	if val := os.Getenv("RETHINKDB_HOST"); val != "" {
 		c.RethinkDBHost = val
 	} else {
-		c.InfluxdbDb = "127.0.0.1"
+		c.RethinkDBHost = "127.0.0.1"
 	}
 	if val := os.Getenv("RETHINKDB_USER"); val != "" {
 		c.RethinkDBUser = val
 	} else {
-		c.InfluxdbDb = "127.0.0.1"
+		c.RethinkDBUser = "noty"
 	}
 	if val := os.Getenv("RETHINKDB_PASS"); val != "" {
 		c.RethinkDBPass = val
-	} else {
-		c.InfluxdbDb = "127.0.0.1"
 	}
 	if val := os.Getenv("RETHINKDB_NAME"); val != "" {
 		c.RethinkDBName = val
 	} else {
-		c.InfluxdbDb = "127.0.0.1"
+		c.RethinkDBName = "noty"
 	}
 	if val := os.Getenv("RETHINKDB_PORT"); val != "" {
 		c.RethinkDBPort = val

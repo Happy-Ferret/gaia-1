@@ -7,6 +7,7 @@ import (
 	"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/monitor/core"
 	"log"
+	"os"
 	"time"
 )
 
@@ -32,6 +33,15 @@ type Writer struct {
 	Size     int
 	session  *r.Session
 	config   *config.Config
+}
+
+func uuid() string {
+	f, _ := os.Open("/dev/urandom")
+	b := make([]byte, 16)
+	f.Read(b)
+	f.Close()
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return uuid
 }
 
 // NewWriter creates a flusher struct
@@ -76,6 +86,7 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 			Status:    p.Response.Status,
 			Body:      p.Response.Body,
 			ServiceId: p.Service.ID,
+			ID:        uuid(),
 			Error:     p.Response.Error,
 		}
 		log.Printf("Add point %v", p.Response.Status)
