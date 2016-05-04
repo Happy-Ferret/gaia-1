@@ -77,6 +77,13 @@ func (w *Writer) Write(point *core.HTTPMetric) {
 }
 
 func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// @TODO Reporting
+			log.Printf("Fail to flush to RethinkDB %v", r)
+		}
+	}()
+
 	bufferPoints := make(buffer, FlushThreshold, FlushThreshold)
 	for i, p := range points {
 		log.Printf("Got data %v", p.Response.Status)
