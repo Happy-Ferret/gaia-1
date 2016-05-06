@@ -51,14 +51,7 @@ func NewWriter(config *config.Config) *Writer {
 	}
 	f.Size = 1000
 	f.DataChan = make(chan *core.HTTPMetric, f.Size)
-	s, err := r.Connect(r.ConnectOpts{
-		Address:  fmt.Sprintf("%s:%s", config.RethinkDBHost, config.RethinkDBPort),
-		Database: config.RethinkDBName,
-		MaxIdle:  10,
-		MaxOpen:  10,
-		Username: config.RethinkDBUser,
-		Password: config.RethinkDBPass,
-	})
+	s, err := f.connect()
 	if err != nil {
 		log.Fatalln("Cannot connec to RethinkDB", err.Error())
 	}
@@ -66,6 +59,26 @@ func NewWriter(config *config.Config) *Writer {
 	f.session = s
 
 	return f
+}
+
+func (w *Writer) connect() (*r.Session, error) {
+	return r.Connect(r.ConnectOpts{
+		Address:  fmt.Sprintf("%s:%s", w.config.RethinkDBHost, w.config.RethinkDBPort),
+		Database: w.config.RethinkDBName,
+		MaxIdle:  10,
+		MaxOpen:  10,
+		Username: w.config.RethinkDBUser,
+		Password: w.config.RethinkDBPass,
+	})
+}
+
+func (w *Writer) reconnect() error {
+	s, err := w.connect()
+	if err == nil {
+		w.session = s
+		return nil
+	}
+	return err
 }
 
 func (w *Writer) Name() string {
@@ -81,6 +94,9 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 		if r := recover(); r != nil {
 			// @TODO Reporting
 			log.Printf("Fail to flush to RethinkDB %v", r)
+			if err := w.reconnect(); err != nil {
+				log.Printf("Still fail to connect to RethinkDB")
+			}
 		}
 	}()
 
