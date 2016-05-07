@@ -34,6 +34,10 @@ prepare:
 sync:
 	rsync -azvp --exclude '.git' --exclude '*.go' . p-axcoto:gaia
 
+adhoc:
+	ssh axcoto "cd gaia; ./run_linux.sh"
+
+
 # Run all docker containers necessary for unit tests
 docker-run:
 ifeq ($(UNAME), Darwin)
