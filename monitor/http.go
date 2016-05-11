@@ -10,6 +10,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	//"github.com/notyim/gaia/config"
+	"github.com/notyim/gaia/env"
 	"github.com/notyim/gaia/monitor/router"
 	"os"
 )
@@ -21,7 +23,7 @@ type HTTPServer struct {
 }
 
 // NewHTTPServer create a HttpServer struct
-func NewHTTPServer(agent *Agent) *HTTPServer {
+func NewHTTPServer(agent *Agent, env *env.Env) *HTTPServer {
 	s := &HTTPServer{
 		agent: agent,
 		r:     mux.NewRouter(),

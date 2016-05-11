@@ -1,7 +1,8 @@
 package monitor
 
 import (
-	"github.com/notyim/gaia/config"
+	//"github.com/notyim/gaia/config"
+	"github.com/notyim/gaia/env"
 	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
@@ -16,7 +17,8 @@ const (
 
 // Start is the main entry point for monitoring system
 func Start() {
-	config := config.NewConfig()
+	env := env.NewEnv()
+	config := env.Config
 
 	log.Printf("Initalize...")
 
@@ -40,7 +42,7 @@ func Start() {
 	}()
 
 	log.Printf("Register http server")
-	go registerHTTPServer(agent)
+	go registerHTTPServer(agent, env)
 
 	log.Printf("Register monitoring point")
 	registerMonitor(agent, shutdown)
@@ -74,8 +76,8 @@ func registerMonitor(agent *Agent, shutdown chan struct{}) {
 	}
 }
 
-func registerHTTPServer(agent *Agent) {
-	h := NewHTTPServer(agent)
+func registerHTTPServer(agent *Agent, env *env.Env) {
+	h := NewHTTPServer(agent, env)
 	h.Start()
 }
 

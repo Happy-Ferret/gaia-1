@@ -54,6 +54,8 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 		fields := map[string]interface{}{
 			"Duration": float64(p.Response.Duration / time.Millisecond),
 			"Status":   p.Response.Status,
+			//@TODO find a way to also store body in InfluxDB
+			// without huring performance
 			//"Body":     p.Response.Body,
 		}
 
