@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/monitor/core"
+	"github.com/notyim/gaia/types"
 	"log"
 	"os"
 	"time"
@@ -17,15 +18,7 @@ const (
 	FlushThreshold = 5
 )
 
-type doc struct {
-	ID        string  `gorethink:"id"`
-	Duration  float64 `gorethink:"duration"`
-	Status    int     `gorethink:"status"`
-	Body      string  `gorethink:"body"`
-	ServiceId string  `gorethink:"serviceId"`
-	Error     error   `gorethink:"error"`
-}
-
+type doc types.RethinkService
 type buffer []*doc
 
 type Writer struct {
@@ -109,14 +102,19 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 			Status:    p.Response.Status,
 			Body:      p.Response.Body,
 			ServiceId: p.Service.ID,
-			ID:        uuid(),
+			ID:        p.Service.ID,
 			Error:     p.Response.Error,
+			CreatedAt: r.Now(),
 		}
 		log.Printf("Add point %v", p.Response.Status)
 	}
 
-	res, err := r.DB("notyim").Table("http_response").Insert(bufferPoints).Run(w.session)
-	defer res.Close() // Always ensure you close the cursor to ensure connections are not leaked
+	res, err := r.Table("http_response").
+		Insert(bufferPoints,
+			r.InsertOpts{
+				Conflict: "replace",
+			}).Run(w.session)
+	defer res.Close()
 
 	if err != nil {
 		log.Printf("Fail to flush to RethinkDB %s %v", w.config.InfluxdbHost, err)

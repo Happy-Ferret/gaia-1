@@ -1,13 +1,17 @@
 package env
 
 import (
+	"fmt"
+	r "github.com/dancannon/gorethink"
 	"github.com/influxdb/influxdb/client/v2"
 	"github.com/notyim/gaia/config"
+	"log"
 )
 
 type Env struct {
-	Config *config.Config
-	Influx client.Client
+	Config  *config.Config
+	Influx  client.Client
+	Rethink *r.Session
 }
 
 var (
@@ -43,14 +47,20 @@ func (e *Env) initInflux() error {
 }
 
 func (e *Env) initRethink() error {
-	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     e.Config.InfluxdbHost,
-		Username: e.Config.InfluxdbUsername,
-		Password: e.Config.InfluxdbPassword,
+	session, err := r.Connect(r.ConnectOpts{
+		Address:  fmt.Sprintf("%s:%s", e.Config.RethinkDBHost, e.Config.RethinkDBPort),
+		Database: e.Config.RethinkDBName,
+		MaxIdle:  10,
+		MaxOpen:  10,
+		Username: e.Config.RethinkDBUser,
+		Password: e.Config.RethinkDBPass,
 	})
 	if err != nil {
+		log.Fatalf("Cannot connect to RethinkDB %s", err)
 		return err
 	}
-	e.Influx = c
+
+	session.SetMaxOpenConns(10)
+	e.Rethink = session
 	return nil
 }

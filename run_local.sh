@@ -9,8 +9,9 @@ export INFLUXDB_PASSWORD='notyim'
 export RETHINKDB_HOST=docker.ax
 export RETHINKDB_PORT=28015
 export RETHINKDB_USER=admin
-export RETHINKDB_PASS=123
+export RETHINKDB_PASS=""
+export RETHINKDB_NAME=notyim
 
 export BIND="127.0.0.1:23501"
 echo "Run"
-nohup ./gaia monitor
+./gaia monitor
