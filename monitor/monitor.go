@@ -47,6 +47,9 @@ func Start() {
 	log.Printf("Register monitoring point")
 	registerMonitor(agent, shutdown)
 
+	log.Printf("Register Watcher")
+	//registerWatcher(agent, shutdown)
+
 	log.Printf("Register signal handle")
 	registerSignal(shutdown)
 }

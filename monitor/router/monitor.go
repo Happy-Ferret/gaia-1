@@ -31,20 +31,34 @@ func queryDB(clnt client.Client, cmd string) (res []client.Result, err error) {
 	return res, nil
 }
 
-func SaveMonitor(resp http.ResponseWriter, req *http.Request) {
-	decoder := json.NewDecoder(req.Body)
-	var t core.Service
+func SaveMonitor(agentChan chan *core.Service) func(http.ResponseWriter, *http.Request) {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Println("Got error when reciving monitor request", r)
+			}
+		}()
 
-	err := decoder.Decode(&t)
-	if err != nil {
-		// sth here
-		fmt.Printf("Error: %s", err)
+		decoder := json.NewDecoder(req.Body)
+		var t core.Service
+
+		err := decoder.Decode(&t)
+		if err != nil {
+			// sth here
+			log.Printf("Error: %s", err)
+			fmt.Fprintln(resp, "Invalid json")
+			return
+		}
+		//@TODO Persist those data so when Gaia restarts, it can continue to monitor and prevent duplicate monitor
+		agentChan <- &t
+		fmt.Printf("%v", t)
 	}
-	fmt.Printf("%v", t)
 }
 
-func UpdateMonitor(resp http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(resp, "Gaia is running")
+func UpdateMonitor() func(http.ResponseWriter, *http.Request) {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		fmt.Fprintln(resp, "Gaia is running")
+	}
 }
 
 func DeleteMonitor(resp http.ResponseWriter, req *http.Request) {

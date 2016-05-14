@@ -33,8 +33,8 @@ func NewHTTPServer(agent *Agent, env *env.Env) *HTTPServer {
 
 	//Wrap the main function into stats handler
 	s.r.Handle("/", stat.Handler(http.HandlerFunc(index)))
-	s.r.Handle("/monitor", stat.Handler(http.HandlerFunc(router.SaveMonitor))).Methods("POST")
-	s.r.Handle("/monitor/{id}", stat.Handler(http.HandlerFunc(router.UpdateMonitor))).Methods("PUT")
+	s.r.Handle("/monitor", stat.Handler(http.HandlerFunc(router.SaveMonitor(agent.InChan)))).Methods("POST")
+	s.r.Handle("/monitor/{id}", stat.Handler(http.HandlerFunc(router.UpdateMonitor()))).Methods("PUT")
 	s.r.Handle("/monitor", stat.Handler(http.HandlerFunc(router.DeleteMonitor))).Methods("DELETE")
 	s.r.Handle("/service/{id}", stat.Handler(http.HandlerFunc(router.GetService))).Methods("GET")
 
