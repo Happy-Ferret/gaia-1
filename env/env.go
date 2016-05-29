@@ -8,6 +8,10 @@ import (
 	"log"
 )
 
+const (
+	MaxRethinkDBConnection = 50
+)
+
 type Env struct {
 	Config  *config.Config
 	Influx  client.Client
@@ -50,8 +54,8 @@ func (e *Env) initRethink() error {
 	session, err := r.Connect(r.ConnectOpts{
 		Address:  fmt.Sprintf("%s:%s", e.Config.RethinkDBHost, e.Config.RethinkDBPort),
 		Database: e.Config.RethinkDBName,
-		MaxIdle:  10,
-		MaxOpen:  10,
+		MaxIdle:  MaxRethinkDBConnection * 2,
+		MaxOpen:  MaxRethinkDBConnection * 2,
 		Username: e.Config.RethinkDBUser,
 		Password: e.Config.RethinkDBPass,
 	})
@@ -60,7 +64,7 @@ func (e *Env) initRethink() error {
 		return err
 	}
 
-	session.SetMaxOpenConns(10)
+	session.SetMaxOpenConns(MaxRethinkDBConnection)
 	e.Rethink = session
 	return nil
 }

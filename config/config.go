@@ -6,6 +6,9 @@ import (
 
 // Config struct hold whole configuration
 type Config struct {
+	AppHost     string
+	AppApiToken string
+
 	DbHost     string
 	DbUser     string
 	DbPassword string
@@ -25,6 +28,18 @@ type Config struct {
 // NewConfig creates a configuration struct with a sane default value
 func NewConfig() *Config {
 	c := &Config{}
+
+	if val := os.Getenv("APP_HOST"); val != "" {
+		c.AppHost = val
+	} else {
+		c.AppHost = "http://noty.ax:9001"
+	}
+
+	if val := os.Getenv("APP_API_TOKEN"); val != "" {
+		c.AppApiToken = val
+	} else {
+		c.AppApiToken = ""
+	}
 
 	if val := os.Getenv("DbHost"); val != "" {
 		c.DbHost = val

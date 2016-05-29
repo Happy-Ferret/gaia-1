@@ -3,6 +3,7 @@ package monitor
 import (
 	//"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/env"
+	"github.com/notyim/gaia/watcher"
 	"github.com/yvasiyarov/gorelic"
 	"log"
 	"os"
@@ -41,14 +42,15 @@ func Start() {
 		coordinator.Start()
 	}()
 
+	log.Printf("Register Watcher")
+	w := watcher.NewWatcher(env)
+	go w.Run()
+
 	log.Printf("Register http server")
 	go registerHTTPServer(agent, env)
 
 	log.Printf("Register monitoring point")
 	registerMonitor(agent, shutdown)
-
-	log.Printf("Register Watcher")
-	//registerWatcher(agent, shutdown)
 
 	log.Printf("Register signal handle")
 	registerSignal(shutdown)
