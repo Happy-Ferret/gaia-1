@@ -6,6 +6,8 @@ import (
 
 // Config struct hold whole configuration
 type Config struct {
+	Debug bool
+
 	AppHost     string
 	AppApiToken string
 
@@ -27,12 +29,14 @@ type Config struct {
 
 // NewConfig creates a configuration struct with a sane default value
 func NewConfig() *Config {
-	c := &Config{}
+	c := &Config{
+		Debug: false,
+	}
 
 	if val := os.Getenv("APP_HOST"); val != "" {
 		c.AppHost = val
 	} else {
-		c.AppHost = "http://noty.ax:9001"
+		c.AppHost = "http://noty.ax:9001/api/v1"
 	}
 
 	if val := os.Getenv("APP_API_TOKEN"); val != "" {
