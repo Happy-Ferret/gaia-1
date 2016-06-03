@@ -65,7 +65,6 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 
 		pt, _ := client.NewPoint("http_response", tags, fields, time.Now())
 		bp.AddPoint(pt)
-		log.Printf("Add point %v", p.Response.Status)
 
 		//pb, _ := client.NewPoint("http_response_body", tags, fields, time.Now())
 		//bp.AddPoint(pt)

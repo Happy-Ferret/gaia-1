@@ -24,8 +24,8 @@ func (c *Coordinator) Start() {
 	// Fetch data from source in a loop and notify agent channel about new data
 	// or notify agent channel about removing of data
 
-	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 2000)
-	c.AgentChan <- core.NewHTTPService("http://log.axcoto.com", "2", 2000)
+	c.AgentChan <- core.NewHTTPService("https://axcoto.com", "1", 20000)
+	// c.AgentChan <- core.NewHTTPService("https://log.axcoto.com", "2", 2000)
 	if s := os.Getenv("GAIA_BENCHMARK"); s != "" {
 		c.bench()
 	}

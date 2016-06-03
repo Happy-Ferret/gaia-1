@@ -106,7 +106,6 @@ func (w *Writer) WriteBatch(points []*core.HTTPMetric) (int, error) {
 			Error:     p.Response.Error,
 			CreatedAt: r.Now(),
 		}
-		log.Printf("Add point %v", p.Response.Status)
 	}
 
 	res, err := r.Table("http_response").

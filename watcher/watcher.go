@@ -52,7 +52,6 @@ func (w *Watcher) Run() {
 	var _response interface{}
 
 	for res.Next(&_response) {
-		log.Printf("Res: %v", _response)
 		response := _response.(map[string]interface{})
 
 		payload := map[string]interface{}{

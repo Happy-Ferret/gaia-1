@@ -18,6 +18,7 @@ const (
 	AgentSignalStart   = "start"   // signal start string
 	AgentSignalStop    = "stop"    // signal stop string
 	AgentSignalCollect = "collect" // signal collect
+	WorkerSignalStop   = "stop"
 )
 
 // Agent represent an agent that run checks
@@ -26,8 +27,8 @@ type Agent struct {
 	InChan     chan *core.Service
 	out        chan *core.HTTPMetric
 	sigChan    chan string
-	services   []*core.Service
-	pools      []chan string
+	services   map[string]*core.Service
+	cmdChan    map[string]chan string
 	httpClient *http.Client
 	lock       *sync.Mutex
 }
@@ -39,8 +40,9 @@ func NewAgent(Out chan *core.HTTPMetric) (*Agent, error) {
 	}
 	a.InChan = make(chan *core.Service, AgentCapacity)
 	a.out = Out
-	a.services = make([]*core.Service, AgentCapacity, AgentCapacity)
-	a.pools = make([]chan string, AgentCapacity, AgentCapacity)
+	//a.services = make([]*core.Service, AgentCapacity, AgentCapacity)
+	a.services = make(map[string]*core.Service)
+	a.cmdChan = make(map[string]chan string)
 	a.sigChan = make(chan string)
 
 	tr := &http.Transport{
@@ -59,16 +61,23 @@ func NewAgent(Out chan *core.HTTPMetric) (*Agent, error) {
 
 // Start accepts data from input and sig channel for control flow
 func (a *Agent) Start() {
-	var total = 0
 	for {
 		select {
 		case s := <-a.InChan:
 			go func() {
+				log.Printf("Accept request to track service %v", s)
 				a.lock.Lock()
+
+				// existed service, we will destroy current worker
+				if a.cmdChan[s.ID] != nil {
+					a.cmdChan[s.ID] <- WorkerSignalStop
+					a.cmdChan[s.ID] = nil
+					a.services[s.ID] = nil
+				}
+
 				ch := make(chan string)
-				a.services[total] = s
-				a.pools[total] = ch
-				total++
+				a.services[s.ID] = s
+				a.cmdChan[s.ID] = ch
 				a.lock.Unlock()
 				a.newWorker(s, ch)
 			}()
@@ -83,10 +92,10 @@ func (a *Agent) Start() {
 }
 
 func (a *Agent) destroyWorkers() {
-	for i, ch := range a.pools {
+	for i, ch := range a.cmdChan {
 		if ch != nil {
 			log.Printf("Stop worker %i\n", i)
-			ch <- "stop"
+			ch <- WorkerSignalStop
 		}
 	}
 }
@@ -110,9 +119,13 @@ Loop:
 			a.out <- a.fetch(s)
 			log.Printf("Fetch for %s done %s", s.Address, t)
 		case action := <-ch:
-			// @TODO more action here
-			log.Println("Got signal %s Quit worker service %s", action, s.Address)
-			break Loop
+			if action == "get" {
+
+			} else {
+				// @TODO more action here
+				log.Println("Got signal %s Quit worker service %s", action, s.Address)
+				break Loop
+			}
 		}
 	}
 	return nil

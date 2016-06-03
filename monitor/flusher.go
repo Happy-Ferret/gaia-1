@@ -58,9 +58,7 @@ func (f *Flusher) Start() {
 		}
 
 		r := <-f.DataChan
-		log.Printf("Got point %v", r.Response.Status)
 		bufferPoints[totalPoint] = r
-		log.Printf("Add point %v to buffer", r.Response.Status)
 		totalPoint++
 
 		if totalPoint >= FlushThreshold {
