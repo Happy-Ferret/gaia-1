@@ -61,8 +61,13 @@ func UpdateMonitor() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func DeleteMonitor(resp http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(resp, "Gaia is running")
+func DeleteMonitor(agent *Agent) func(http.ResponseWriter, *http.Request) {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+		serviceId := vars["id"]
+		agent.StopWorker(serviceId)
+		fmt.Fprintln(resp, "Gaia is running")
+	}
 }
 
 func GetService(resp http.ResponseWriter, req *http.Request) {

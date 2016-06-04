@@ -91,6 +91,11 @@ func (a *Agent) Start() {
 	}
 }
 
+// StopWorker stops worker that monitor service
+func (a *Agent) StopWorker(serviceID string) {
+	a.cmdChan[serviceID] <- WorkerSignalStop
+}
+
 func (a *Agent) destroyWorkers() {
 	for i, ch := range a.cmdChan {
 		if ch != nil {
