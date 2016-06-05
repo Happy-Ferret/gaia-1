@@ -61,7 +61,7 @@ func UpdateMonitor() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func DeleteMonitor(agent *Agent) func(http.ResponseWriter, *http.Request) {
+func DeleteMonitor(agent core.Agent) func(http.ResponseWriter, *http.Request) {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		serviceId := vars["id"]
