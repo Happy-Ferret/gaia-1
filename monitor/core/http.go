@@ -32,7 +32,3 @@ func NewHTTPService(Address, ID string, interval int64) *Service {
 	s := &Service{Address, ID, interval, "http"}
 	return s
 }
-
-type Agent interface {
-	StopWorker(string) (bool, error)
-}
