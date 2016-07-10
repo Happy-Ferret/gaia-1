@@ -5,7 +5,9 @@ import (
 	r "github.com/dancannon/gorethink"
 	"github.com/influxdb/influxdb/client/v2"
 	"github.com/notyim/gaia/config"
+	"github.com/oschwald/geoip2-golang"
 	"log"
+	"net"
 )
 
 const (
@@ -13,9 +15,12 @@ const (
 )
 
 type Env struct {
-	Config  *config.Config
-	Influx  client.Client
-	Rethink *r.Session
+	Config   *config.Config
+	Influx   client.Client
+	Rethink  *r.Session
+	Location struct {
+		Country string
+	}
 }
 
 var (
@@ -66,5 +71,24 @@ func (e *Env) initRethink() error {
 
 	session.SetMaxOpenConns(MaxRethinkDBConnection)
 	e.Rethink = session
+	return nil
+}
+
+func (e *Env) initLocation() error {
+
+	db, err := geoip2.Open("data/GeoIP2-City.mmdb")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	// If you are using strings that may be invalid, check that ip is not nil
+	ip := net.ParseIP("81.2.69.142")
+	record, err := db.Country(ip)
+	if err != nil {
+		log.Fatal(err)
+	}
+	e.Location = struct {
+		Country string
+	}{record.Country.IsoCode}
 	return nil
 }
