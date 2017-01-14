@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	//"net/url"
 	"github.com/notyim/gaia/monitor/core"
-	"sync"
-	"testing"
+	//"sync"
+	//"testing"
 )
 
 // HTTPServer represents internal http server
