@@ -142,6 +142,7 @@ func (a *Agent) Stop() {
 	a.sigChan <- AgentSignalStop
 }
 
+// fetch requests and timing the service
 func (a *Agent) fetch(s *core.Service) *core.HTTPMetric {
 	start := time.Now()
 	rs := &core.HTTPMetric{}
