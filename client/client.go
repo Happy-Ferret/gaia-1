@@ -43,6 +43,8 @@ func Start(gaia string) {
 
 func NewClient(gaia string) *Client {
 	ip, location := getGeoIP()
+	log.Println("Found", ip, location)
+
 	c := Client{
 		IpAddress:      ip,
 		Location:       location,
@@ -56,7 +58,7 @@ func NewClient(gaia string) *Client {
 func (c *Client) Register() {
 	_, err := http.PostForm(fmt.Sprintf("%s/client/register", c.GaiaServerHost),
 		url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
-
+	log.Println("Register myself as", c.IpAddress, "at", c.Location)
 	if err != nil {
 		log.Fatal("Fail to register client", err)
 	}
@@ -65,8 +67,9 @@ func (c *Client) Register() {
 func getGeoIP() (string, string) {
 	// @TODO Move this to gaia server
 	// request ifconfig.me to find public ip
-	resp, err := http.Get("ifconfig.co")
+	resp, err := http.Get("https://ifconfig.co")
 	if err != nil {
+		log.Println("Error fetch geoip", err)
 		return "", ""
 	}
 
@@ -74,17 +77,20 @@ func getGeoIP() (string, string) {
 	resp.Body.Close()
 
 	if err != nil {
+		log.Println("Error fetch read ip", err)
 		return "", ""
 	}
 
-	resp, err = http.Get("ifconfig.co/country")
+	resp, err = http.Get("https://ifconfig.co/country")
 	if err != nil {
+		log.Println("Error fetch geo location", err)
 		return "", ""
 	}
 
-	resp.Body.Close()
 	location, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
+		log.Println("Error read geo location", err)
 		return "", ""
 	}
 
