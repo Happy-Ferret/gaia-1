@@ -25,6 +25,8 @@ type Config struct {
 	RethinkDBUser string
 	RethinkDBPass string
 	RethinkDBName string
+
+	GaiaServerHost string
 }
 
 // NewConfig creates a configuration struct with a sane default value
@@ -103,6 +105,12 @@ func NewConfig() *Config {
 		c.RethinkDBPort = val
 	} else {
 		c.RethinkDBPort = "28015"
+	}
+
+	if val := os.Getenv("GAIA_SERVER_HOST"); val != "" {
+		c.GaiaServerHost = val
+	} else {
+		c.GaiaServerHost = "127.0.0.1:28301"
 	}
 
 	return c
