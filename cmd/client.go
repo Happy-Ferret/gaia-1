@@ -16,19 +16,21 @@ package cmd
 
 import (
 	"github.com/notyim/gaia/client"
+	"github.com/notyim/gaia/config"
 	"github.com/spf13/cobra"
 )
 
 // monitorCmd respresents the monitor command
-var monitorCmd = &cobra.Command{
+var clientCmd = &cobra.Command{
 	Use:   "client",
 	Short: "A brief description of your command",
 	Long:  `Gaia in client mode.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client.Start()
+		config := config.NewConfig()
+		client.Start(config.GaiaServerHost)
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(monitorCmd)
+	RootCmd.AddCommand(clientCmd)
 }

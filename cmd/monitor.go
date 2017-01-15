@@ -44,5 +44,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	monitorCmd.Flags().BoolP("mode", "m", false, "server or agent mode.")
-
 }
