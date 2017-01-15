@@ -1,13 +1,14 @@
 package client
 
 import (
-	"github.com/notyim/gaia/types"
-	//"io/ioutil"
 	"bufio"
+	"github.com/notyim/gaia/types"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Only support 10k check atm
@@ -60,10 +61,32 @@ func (s *Scanner) Sync() {
 
 func (s *Scanner) AddCheck(check *types.Check) {
 }
+func (s *Scanner) RemoveCheck() {
+}
 
 // Monitor query stat of all checks in its internal data stucture and
 // foward back to gaia server
 func (s *Scanner) Monitor() {
+	for i, s := range s.Checks {
+		go func(url string) {
+
+			startAt := time.Now()
+			resp, err := http.Get(url)
+			endAt := time.Now()
+			if err != nil {
+				log.Println(url, "error", err)
+				return
+			}
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Println(url, endAt.Sub(startAt), err)
+			} else {
+				log.Println(url, endAt.Sub(startAt), len(body), "bytes")
+			}
+
+		}(s.URI)
+	}
 }
 
 func decode(s string) *types.Check {
