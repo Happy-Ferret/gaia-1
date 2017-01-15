@@ -80,7 +80,10 @@ func (s *Scanner) Sync() {
 }
 
 func (s *Scanner) AddCheck(check *types.Check) {
+	s.Checks[s.totalCheck] = check
+	s.totalCheck++
 }
+
 func (s *Scanner) RemoveCheck() {
 }
 
@@ -101,6 +104,7 @@ func (s *Scanner) Monitor() {
 }
 
 func (s *Scanner) Execute(check *types.Check) {
+	log.Println("Evaluate", check.URI)
 
 	startAt := time.Now()
 	resp, err := http.Get(check.URI)

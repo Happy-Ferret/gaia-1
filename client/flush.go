@@ -54,7 +54,7 @@ func (f *Flusher) Write(res *types.HTTPCheckResponse) {
 
 // post check result to gaia
 func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
-	endpoint := fmt.Sprintf("%s/check_results/%d", f.Host, res.CheckID)
+	endpoint := fmt.Sprintf("%s/check_results/%s", f.Host, res.CheckID)
 	log.Println("Flush check result", res, "to", endpoint)
 
 	_, err := http.PostForm(endpoint,
