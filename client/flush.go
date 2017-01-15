@@ -26,6 +26,7 @@ func NewFlusher(to string) *Flusher {
 		quit: make(chan bool),
 	}
 
+	f.Start()
 	return &f
 }
 
@@ -45,12 +46,23 @@ func (f *Flusher) Start() {
 	}
 }
 
+// Write the result to gaia
+// This actually queues the check into channel to be flush later
+func (f *Flusher) Write(res *types.HTTPCheckResponse) {
+	f.ch <- res
+}
+
 // post check result to gaia
 func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
-	_, err := http.PostForm(fmt.Sprintf("%s/check_results/%d", f.Host, res.CheckID),
+	endpoint := fmt.Sprintf("%s/check_results/%d", f.Host, res.CheckID)
+	log.Println("Flush check result", res, "to", endpoint)
+
+	_, err := http.PostForm(endpoint,
 		url.Values{
-			"TotalTime": {fmt.Sprintf("%d", int64(res.TotalTime/time.Millisecond))},
-			"TotalSize": {fmt.Sprintf("%d", res.TotalSize)},
+			"Error":        {fmt.Sprintf("%d", res.Error)},
+			"ErrorMessage": {fmt.Sprintf("%s", res.ErrorMessage)},
+			"TotalTime":    {fmt.Sprintf("%d", int64(res.TotalTime/time.Millisecond))},
+			"TotalSize":    {fmt.Sprintf("%d", res.TotalSize)},
 		})
 
 	if err != nil {

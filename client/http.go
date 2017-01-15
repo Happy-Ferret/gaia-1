@@ -11,13 +11,13 @@ type HTTPServer struct {
 
 // Run the whole client
 // Register route, initalize client, syncing
-func Start() *HTTPServer {
+func CreateHTTPServer(scanner *Scanner) *HTTPServer {
 	s := HTTPServer{
 		r: mux.NewRouter(),
 	}
 
-	sync()
-	s.r.Handler("/checks").method("POST")
+	SyncCheck()
+	//s.r.Handler("/checks").method("POST")
 	return &s
 }
 
