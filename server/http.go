@@ -17,9 +17,9 @@ type HTTPServer struct {
 	flusher *Flusher
 }
 
-func (h *HTTPServer) Start() {
+func (h *HTTPServer) Start(bindTo string) {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, h.r)
-	log.Println(http.ListenAndServe("0.0.0.0:28300", loggedRouter))
+	log.Println(http.ListenAndServe(bindTo, loggedRouter))
 }
 
 // Handle register a new check on http interface

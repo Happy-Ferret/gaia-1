@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/config"
-	"io/ioutil"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 )
@@ -24,10 +21,11 @@ type Server struct {
 
 // Initialize gaia server
 func Start(c *config.Config) {
-	bindTo := "0.0.0.0:28300"
 	log.Println("Initalize server and bind to")
+	bindTo := fmt.Sprintf("%s:%d", "0.0.0.0", 28300)
 
 	s := NewServer(c)
+	go s.HTTPServer.Start(bindTo)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
@@ -44,10 +42,8 @@ func NewServer(c *config.Config) *Server {
 		config:  c,
 	}
 
-	h := CreateHTTPServer(s, NewFlusher())
+	h := CreateHTTPServer(&s, NewFlusher())
 	s.HTTPServer = h
-
-	go h.Start()
 
 	return &s
 }

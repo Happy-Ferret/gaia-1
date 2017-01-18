@@ -21,7 +21,7 @@ import (
 )
 
 // monitorCmd respresents the monitor command
-var clientCmd = &cobra.Command{
+var serverCmd = &cobra.Command{
 	Use:   "client",
 	Short: "A brief description of your command",
 	Long:  `Gaia in client mode.`,
@@ -32,5 +32,5 @@ var clientCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(clientCmd)
+	RootCmd.AddCommand(serverCmd)
 }
