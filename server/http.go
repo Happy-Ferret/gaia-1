@@ -1,22 +1,24 @@
-package client
+package server
 
 import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/notyim/gaia/types"
+	//"github.com/notyim/gaia/types"
+	"github.com/notyim/gaia/client"
 	"log"
 	"net/http"
 	"os"
 )
 
 type HTTPServer struct {
+	server  *Server
 	r       *mux.Router
 	flusher *Flusher
 }
 
 func (h *HTTPServer) Start() {
-	loggedRouter := handlers.LoggingHandler(os.Stdout, s.r)
+	loggedRouter := handlers.LoggingHandler(os.Stdout, h.r)
 	log.Println(http.ListenAndServe("0.0.0.0:28300", loggedRouter))
 }
 
@@ -31,17 +33,17 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	location := r.FormValue("location")
 
 	client := client.Client{
-		ip:       ip,
-		location: loction,
+		IpAddress: ip,
+		Location:  location,
 	}
-	h.s.append(client)
-	h.s.Clients = append(h.s.Clients, client)
+	h.server.Clients = append(h.server.Clients, &client)
 }
 
 // Run the whole client
 // Register route, initalize client, syncing
-func CreateHTTPServer(flusher *Flusher) *HTTPServer {
+func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 	s := HTTPServer{
+		server:  server,
 		flusher: flusher,
 		r:       mux.NewRouter(),
 	}

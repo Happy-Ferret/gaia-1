@@ -27,7 +27,7 @@ func Start(c *config.Config) {
 	bindTo := "0.0.0.0:28300"
 	log.Println("Initalize server and bind to")
 
-	s := NewServer(c, f)
+	s := NewServer(c)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
@@ -44,7 +44,7 @@ func NewServer(c *config.Config) *Server {
 		config:  c,
 	}
 
-	h := CreateHTTPServer(NewFlusher())
+	h := CreateHTTPServer(s, NewFlusher())
 	s.HTTPServer = h
 
 	go h.Start()

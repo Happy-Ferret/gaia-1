@@ -14,14 +14,12 @@ const (
 )
 
 type Flusher struct {
-	Host string
 	ch   chan *types.HTTPCheckResponse
 	quit chan bool
 }
 
-func NewFlusher(to string) *Flusher {
+func NewFlusher() *Flusher {
 	f := Flusher{
-		Host: to,
 		ch:   make(chan *types.HTTPCheckResponse, MaxFlusher),
 		quit: make(chan bool),
 	}
@@ -54,7 +52,7 @@ func (f *Flusher) Write(res *types.HTTPCheckResponse) {
 
 // post check result to gaia
 func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
-	endpoint := fmt.Sprintf("%s/check_results/%s", f.Host, res.CheckID)
+	endpoint := fmt.Sprintf("check_results/%s", res.CheckID)
 	log.Println("Flush check result", res, "to", endpoint)
 
 	_, err := http.PostForm(endpoint,
