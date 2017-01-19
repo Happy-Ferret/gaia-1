@@ -21,8 +21,8 @@ type Server struct {
 
 // Initialize gaia server
 func Start(c *config.Config) {
-	log.Println("Initalize server and bind to")
 	bindTo := fmt.Sprintf("%s:%d", "0.0.0.0", 28300)
+	log.Println("Initalize server and bind to", bindTo)
 
 	s := NewServer(c)
 	go s.HTTPServer.Start(bindTo)

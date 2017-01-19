@@ -36,7 +36,9 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 		IpAddress: ip,
 		Location:  location,
 	}
+	log.Println("Found %s %s", ip, location)
 	h.server.Clients = append(h.server.Clients, &client)
+	log.Printf("Existing clients %v\n", h.server.Clients)
 }
 
 // Run the whole client

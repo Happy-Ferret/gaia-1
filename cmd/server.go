@@ -22,7 +22,7 @@ import (
 
 // monitorCmd respresents the monitor command
 var serverCmd = &cobra.Command{
-	Use:   "client",
+	Use:   "server",
 	Short: "A brief description of your command",
 	Long:  `Gaia in client mode.`,
 	Run: func(cmd *cobra.Command, args []string) {
