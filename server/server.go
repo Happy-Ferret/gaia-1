@@ -38,8 +38,7 @@ func Start(c *config.Config) {
 
 func NewServer(c *config.Config) *Server {
 	s := Server{
-		Clients: make([]*client.Client, InitClientsSize),
-		config:  c,
+		config: c,
 	}
 
 	h := CreateHTTPServer(&s, NewFlusher())
