@@ -28,6 +28,14 @@ func (h *HTTPServer) ListCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 // Register a client to our internal server state
+func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
+	for _, c := range h.server.Clients {
+		log.Printf("Existing clients %v\n", h.server.Clients)
+		fmt.Fprintf(w, fmt.Sprintf("IP: %s Location: %s\n", c.IpAddress, c.Location))
+	}
+}
+
+// Register a client to our internal server state
 func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	ip := r.FormValue("ip")
 	location := r.FormValue("location")
@@ -52,5 +60,6 @@ func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 
 	s.r.HandleFunc("/checks", s.ListCheck).Methods("GET")
 	s.r.HandleFunc("/client/register", s.RegisterClient).Methods("POST")
+	s.r.HandleFunc("/clients", s.ListClient).Methods("GET")
 	return &s
 }
