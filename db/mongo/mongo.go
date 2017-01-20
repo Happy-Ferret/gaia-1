@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"gopkg.in/mgo.v2"
+	"log"
 )
 
 var (
@@ -39,5 +40,6 @@ func Query(q func(*mgo.Database) error) error {
 func QueryOn(db string, q func(*mgo.Database) error) error {
 	s := session.Copy() //.DB(defaultDB)
 	defer s.Close()
+	log.Println("Query on", db)
 	return q(s.DB(db))
 }

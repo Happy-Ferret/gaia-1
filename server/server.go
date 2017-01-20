@@ -17,7 +17,7 @@ const (
 
 type Server struct {
 	Clients    []*client.Client
-	Checks     *models.Checks
+	Checks     []models.Check
 	config     *config.Config
 	HTTPServer *HTTPServer
 }
@@ -27,7 +27,11 @@ type Server struct {
 // I wish we can use RethinkDB here
 func (s *Server) SyncChecks() {
 	// Initial sync
-	s.Checks.All()
+	//s.Checks.All()
+	var checks []models.Check
+	models.AllChecks(&checks)
+	s.Checks = checks
+
 	log.Println("Found check %v", s.Checks)
 
 	// Setup go routine for periodically sync
@@ -36,7 +40,7 @@ func (s *Server) SyncChecks() {
 
 // Initialize gaia server
 func Start(c *config.Config) {
-	mongo.Connect("127.0.0.1:27017", "noty")
+	mongo.Connect("127.0.0.1:27017", "trinity_development")
 
 	bindTo := fmt.Sprintf("%s:%d", "0.0.0.0", 28300)
 	log.Println("Initalize server and bind to", bindTo)

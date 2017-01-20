@@ -4,8 +4,7 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	//"strings"
-	//"time"
+	//"log"
 )
 
 type Check struct {
@@ -31,12 +30,21 @@ func (*Check) coll(db *mgo.Database) *mgo.Collection {
 	return db.C("service")
 }
 
-type Checks []Check
+type Checks *[]Check
 
-func (s *Checks) All() error {
+//func (c *Checks) All() error {
+//	return mongo.Query(func(session *mgo.Database) error {
+//		var checks []Check
+//		session.C("checks").Find(nil).Sort("_id").All(&checks)
+//		c = checks
+//		log.Println(c)
+//		return nil
+//	})
+//}
+
+func AllChecks(c *[]Check) error {
 	return mongo.Query(func(session *mgo.Database) error {
-		session.C("checks").Find(nil).Sort("_id").All(s)
-
+		session.C("checks").Find(nil).Sort("_id").All(c)
 		return nil
 	})
 }
