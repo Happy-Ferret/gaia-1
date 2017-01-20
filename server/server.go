@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/config"
+	"github.com/notyim/gaia/db/mongo"
+	"github.com/notyim/gaia/models"
 	"log"
 	"os"
 	"os/signal"
@@ -15,16 +17,32 @@ const (
 
 type Server struct {
 	Clients    []*client.Client
+	Checks     *models.Checks
 	config     *config.Config
 	HTTPServer *HTTPServer
 }
 
+// Sync and keep track of checks from db
+// This is poorman changedfeed in MongoDB
+// I wish we can use RethinkDB here
+func (s *Server) SyncChecks() {
+	// Initial sync
+	s.Checks.All()
+	log.Println("Found check %v", s.Checks)
+
+	// Setup go routine for periodically sync
+
+}
+
 // Initialize gaia server
 func Start(c *config.Config) {
+	mongo.Connect("127.0.0.1:27017", "noty")
+
 	bindTo := fmt.Sprintf("%s:%d", "0.0.0.0", 28300)
 	log.Println("Initalize server and bind to", bindTo)
 
 	s := NewServer(c)
+	s.SyncChecks()
 	go s.HTTPServer.Start(bindTo)
 
 	sigChan := make(chan os.Signal, 1)
