@@ -48,3 +48,10 @@ func AllChecks(c *[]Check) error {
 		return nil
 	})
 }
+
+func FindChecksAfter(c *[]Check, id bson.ObjectId) error {
+	return mongo.Query(func(session *mgo.Database) error {
+		session.C("checks").Find(bson.M{"_id": bson.M{"$gt": id}}).Sort("_id").All(c)
+		return nil
+	})
+}

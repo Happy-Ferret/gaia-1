@@ -7,8 +7,11 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"time"
 )
 
 const (
@@ -34,8 +37,28 @@ func (s *Server) SyncChecks() {
 
 	log.Println("Found check %v", s.Checks)
 
+	ticker := time.NewTicker(time.Second * 60)
 	// Setup go routine for periodically sync
+	go func() {
+		for t := range ticker.C {
+			log.Println("Poll checks at", t)
+			var checks []models.Check
+			models.FindChecksAfter(&checks, s.Checks[len(s.Checks)-1].ID)
+			s.Checks = append(s.Checks, checks...)
+		}
+	}()
+}
 
+//Push new checks to client
+func (s *Server) PushCheckToClients(check *models.Check) {
+	for client := range s.Clients {
+		_, err := http.PostForm(fmt.Sprintf("%s/checks", c.GaiaServerHost),
+			url.Values{"id": {check.ID}, "uri": {check.URI}, "type": {check.Type}})
+		log.Println("Push", check, "to client", client)
+		if err != nil {
+			log.Fatal("Fail to register client", err)
+		}
+	}
 }
 
 // Initialize gaia server
