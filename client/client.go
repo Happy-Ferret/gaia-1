@@ -45,6 +45,11 @@ func NewClient(gaia string) *Client {
 	ip, location := getGeoIP()
 	log.Println("Found", ip, location)
 
+	// TODO abstract this
+	if os.Getenv("ENV") == "LOCAL" {
+		ip = "127.0.0.1"
+	}
+
 	c := Client{
 		IpAddress:      ip,
 		Location:       location,

@@ -51,14 +51,19 @@ func (s *Server) SyncChecks() {
 
 //Push new checks to client
 func (s *Server) PushCheckToClients(check *models.Check) {
-	for client := range s.Clients {
-		_, err := http.PostForm(fmt.Sprintf("%s/checks", c.GaiaServerHost),
-			url.Values{"id": {check.ID}, "uri": {check.URI}, "type": {check.Type}})
-		log.Println("Push", check, "to client", client)
+	for _, c := range s.Clients {
+		// Implement https for client
+		// TODO We will dismiss all this and replica with a TCP with tls
+		_, err := http.PostForm(fmt.Sprintf("http://%s:28302/checks", c.IpAddress),
+			url.Values{"id": {check.ID.String()}, "uri": {check.URI}, "type": {check.Type}})
+		log.Println("Push", check, "to client", c)
 		if err != nil {
 			log.Fatal("Fail to register client", err)
 		}
 	}
+}
+
+func (s *Server) CreateCheckResult() {
 }
 
 // Initialize gaia server

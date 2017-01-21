@@ -6,9 +6,12 @@ import (
 	"github.com/gorilla/mux"
 	//"github.com/notyim/gaia/types"
 	"github.com/notyim/gaia/client"
+	"github.com/notyim/gaia/models"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 type HTTPServer struct {
@@ -49,6 +52,31 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Existing clients %v\n", h.server.Clients)
 }
 
+func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
+	isError := (r.FormValue("Error") == "true")
+	errorMessage := r.FormValue("ErrorMessage")
+
+	totalTime, err1 := strconv.Atoi(r.FormValue("TotalTime"))
+	totalSize, err2 := strconv.Atoi(r.FormValue("TotalSize"))
+	if err1 != nil || err2 != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "OK")
+		return
+	}
+
+	checkResult := models.CheckResult{
+		Error:        isError,
+		ErrorMessage: errorMessage,
+		TotalTime:    time.Duration(totalTime) * time.Second,
+		TotalSize:    totalSize,
+	}
+	//TODO: We should use a consumer channerl to process this instead of spawing goroutine instantly
+	go checkResult.Save()
+
+	w.WriteHeader(http.StatusAccepted)
+	fmt.Fprintf(w, "OK")
+}
+
 // Run the whole client
 // Register route, initalize client, syncing
 func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
@@ -61,5 +89,6 @@ func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 	s.r.HandleFunc("/checks", s.ListCheck).Methods("GET")
 	s.r.HandleFunc("/client/register", s.RegisterClient).Methods("POST")
 	s.r.HandleFunc("/clients", s.ListClient).Methods("GET")
+	s.r.HandleFunc("/check_results", s.CreateCheckResult).Methods("POST")
 	return &s
 }
