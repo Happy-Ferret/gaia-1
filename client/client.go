@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"time"
 )
 
 type Client struct {
@@ -61,12 +62,23 @@ func NewClient(gaia string) *Client {
 
 // Register this client with Gaia server
 func (c *Client) Register() {
-	_, err := http.PostForm(fmt.Sprintf("%s/client/register", c.GaiaServerHost),
-		url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
-	log.Println("Register myself as", c.IpAddress, "at", c.Location)
-	if err != nil {
-		log.Fatal("Fail to register client", err)
+	register := func() {
+		_, err := http.PostForm(
+			fmt.Sprintf("%s/client/register", c.GaiaServerHost),
+			url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
+		log.Println("Register myself as", c.IpAddress, "at", c.Location)
+		if err != nil {
+			log.Fatal("Fail to register client", err)
+		}
 	}
+	register()
+	ticker := time.NewTicker(time.Second * 60)
+	go func() {
+		for t := range ticker.C {
+			log.Println("Heartbeat to gaia at", t)
+			register()
+		}
+	}()
 }
 
 func getGeoIP() (string, string) {

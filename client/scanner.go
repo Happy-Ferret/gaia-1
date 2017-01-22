@@ -111,6 +111,7 @@ func (s *Scanner) Execute(check *types.Check) {
 	endAt := time.Now()
 
 	response := types.HTTPCheckResponse{
+		CheckedAt: endAt,
 		CheckID:   check.ID,
 		TotalTime: endAt.Sub(startAt),
 	}

@@ -11,6 +11,7 @@ type Check struct {
 }
 
 type HTTPCheckResponse struct {
+	CheckedAt    time.Time
 	CheckID      string
 	TotalTime    time.Duration
 	TotalSize    int

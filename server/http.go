@@ -46,13 +46,26 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	ip := r.FormValue("ip")
 	location := r.FormValue("location")
 
+	if ip == "" || location == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	client := client.Client{
 		IpAddress: ip,
 		Location:  location,
 	}
 	log.Println("Found %s %s", ip, location)
+	for _, c := range h.server.Clients {
+		if c.IpAddress == client.IpAddress {
+			w.WriteHeader(http.StatusAlreadyReported)
+			return
+		}
+	}
 	h.server.Clients = append(h.server.Clients, &client)
+
 	log.Printf("Existing clients %v\n", h.server.Clients)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
