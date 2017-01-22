@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/config"
+	"github.com/notyim/gaia/db/influxdb"
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
@@ -66,19 +67,18 @@ func (s *Server) PushCheckToClients(check *models.Check) {
 	}
 }
 
-func (s *Server) CreateCheckResult() {
-}
-
 // Initialize gaia server
 func Start(c *config.Config) {
 	mongo.Connect("127.0.0.1:27017", "trinity_development")
 
-	bindTo := fmt.Sprintf("%s:%d", "0.0.0.0", 28300)
-	log.Println("Initalize server and bind to", bindTo)
+	log.Println("Initalize server and bind to", c.GaiaServerBindTo)
+
+	influxdb.Connect(c.InfluxdbHost, c.InfluxdbUsername, c.InfluxdbPassword)
+	influxdb.UseDB(c.InfluxdbDb)
 
 	s := NewServer(c)
 	s.SyncChecks()
-	go s.HTTPServer.Start(bindTo)
+	go s.HTTPServer.Start(c.GaiaServerBindTo)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)

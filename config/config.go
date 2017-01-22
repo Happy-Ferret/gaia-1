@@ -26,7 +26,9 @@ type Config struct {
 	RethinkDBPass string
 	RethinkDBName string
 
-	GaiaServerHost string
+	GaiaServerHost   string
+	GaiaServerBindTo string
+	GaiaClientBindTo string
 }
 
 // NewConfig creates a configuration struct with a sane default value
@@ -68,19 +70,19 @@ func NewConfig() *Config {
 	if val := os.Getenv("INFLUXDB_USERNAME"); val != "" {
 		c.InfluxdbUsername = val
 	} else {
-		c.InfluxdbUsername = "notyim"
+		c.InfluxdbUsername = "noty"
 	}
 
 	if val := os.Getenv("INFLUXDB_PASSWORD"); val != "" {
 		c.InfluxdbPassword = val
 	} else {
-		c.InfluxdbPassword = "notyim"
+		c.InfluxdbPassword = "noty"
 	}
 
 	if val := os.Getenv("INFLUXDB_DB"); val != "" {
 		c.InfluxdbDb = val
 	} else {
-		c.InfluxdbDb = "notyim"
+		c.InfluxdbDb = "noty"
 	}
 
 	if val := os.Getenv("RETHINKDB_HOST"); val != "" {
@@ -111,6 +113,18 @@ func NewConfig() *Config {
 		c.GaiaServerHost = val
 	} else {
 		c.GaiaServerHost = "127.0.0.1:28301"
+	}
+
+	if val := os.Getenv("GaiaServerBindTo"); val != "" {
+		c.GaiaServerBindTo = val
+	} else {
+		c.GaiaServerBindTo = "127.0.0.1:28300"
+	}
+
+	if val := os.Getenv("GaiaClientBindTo"); val != "" {
+		c.GaiaClientBindTo = val
+	} else {
+		c.GaiaClientBindTo = "127.0.0.1:28302"
 	}
 
 	return c
