@@ -59,11 +59,14 @@ func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
 
 	_, err := http.PostForm(endpoint,
 		url.Values{
+			"CheckedAt":    {fmt.Sprintf("%d", res.CheckedAt.UnixNano())},
 			"Error":        {fmt.Sprintf("%t", res.Error)},
 			"ErrorMessage": {fmt.Sprintf("%s", res.ErrorMessage)},
 			"TotalTime":    {fmt.Sprintf("%d", int64(res.TotalTime/time.Millisecond))},
 			"TotalSize":    {fmt.Sprintf("%d", res.TotalSize)},
 		})
+
+	log.Println("time", fmt.Sprintf("%d", int64(res.TotalTime/time.Millisecond)))
 
 	if err != nil {
 		log.Println("Fail to flush", res.CheckID, "err", err)

@@ -34,10 +34,12 @@ func (h *HTTPServer) ListCheck(w http.ResponseWriter, r *http.Request) {
 
 // Register a client to our internal server state
 func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
+	lines := ""
 	for _, c := range h.server.Clients {
 		log.Printf("Existing clients %v\n", h.server.Clients)
-		fmt.Fprintf(w, fmt.Sprintf("IP: %s Location: %s\n", c.IpAddress, c.Location))
+		lines += fmt.Sprintf("IP: %s Location: %s\n", c.IpAddress, c.Location)
 	}
+	fmt.Fprintf(w, lines)
 	w.WriteHeader(200)
 }
 
@@ -75,17 +77,27 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 	totalTime, err1 := strconv.Atoi(r.FormValue("TotalTime"))
 	totalSize, err2 := strconv.Atoi(r.FormValue("TotalSize"))
 	if err1 != nil || err2 != nil {
+		log.Println("Fail to parse int", err1, err2)
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "OK")
+		return
+	}
+
+	checkedAt, err := strconv.Atoi(r.FormValue("CheckedAt"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("Fail to parse CheckedAt", err)
 		fmt.Fprintf(w, "OK")
 		return
 	}
 
 	vars := mux.Vars(r)
 	checkResult := models.CheckResult{
+		CheckedAt:    time.Unix(0, int64(checkedAt)),
 		CheckID:      vars["id"],
 		Error:        isError,
 		ErrorMessage: errorMessage,
-		TotalTime:    time.Duration(totalTime) * time.Second,
+		TotalTime:    time.Duration(int64(time.Millisecond) * int64(totalTime)),
 		TotalSize:    totalSize,
 	}
 	//TODO: We should use a consumer channerl to process this instead of spawing goroutine instantly

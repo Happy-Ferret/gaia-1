@@ -5,7 +5,6 @@ import (
 	"github.com/notyim/gaia/db/influxdb"
 	"github.com/notyim/gaia/types"
 	"log"
-	"time"
 )
 
 type CheckResult types.HTTPCheckResponse
@@ -25,7 +24,7 @@ func (c *CheckResult) Point() *client.Point {
 		fields["ErrorMessage"] = c.ErrorMessage
 	}
 
-	point, err := client.NewPoint("http_response", tags, fields, time.Now())
+	point, err := client.NewPoint("http_response", tags, fields, c.CheckedAt)
 
 	if err != nil {
 		//TODO log error
@@ -38,7 +37,6 @@ func (c *CheckResult) Point() *client.Point {
 
 func (c *CheckResult) Save() {
 	log.Println("FLush", c, "to InfluxDB")
-	// TODO: get timestamp from client
 	if err := influxdb.WritePoint(c.Point()); err != nil {
 		log.Println("Cannot write batch points to influxdb", err)
 	}
