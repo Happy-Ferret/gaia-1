@@ -45,6 +45,9 @@ func (s *Server) SyncChecks() {
 			var checks []models.Check
 			models.FindChecksAfter(&checks, s.Checks[len(s.Checks)-1].ID)
 			s.Checks = append(s.Checks, checks...)
+			for _, check := range checks {
+				s.PushCheckToClients(&check)
+			}
 		}
 	}()
 }
@@ -55,10 +58,10 @@ func (s *Server) PushCheckToClients(check *models.Check) {
 		// Implement https for client
 		// TODO We will dismiss all this and replica with a TCP with tls
 		_, err := http.PostForm(fmt.Sprintf("http://%s:28302/checks", c.IpAddress),
-			url.Values{"id": {check.ID.String()}, "uri": {check.URI}, "type": {check.Type}})
+			url.Values{"id": {check.ID.Hex()}, "uri": {check.URI}, "type": {check.Type}})
 		log.Println("Push", check, "to client", c)
 		if err != nil {
-			log.Fatal("Fail to register client", err)
+			log.Fatal("Fail to push check to client", err)
 		}
 	}
 }

@@ -27,7 +27,9 @@ func (h *HTTPServer) Start(bindTo string) {
 
 // Handle register a new check on http interface
 func (h *HTTPServer) ListCheck(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "OK")
+	for _, check := range h.server.Checks {
+		fmt.Fprintf(w, fmt.Sprintf("%s,%s,%s\n", check.ID.Hex(), check.URI, check.Type))
+	}
 }
 
 // Register a client to our internal server state
@@ -36,6 +38,7 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Existing clients %v\n", h.server.Clients)
 		fmt.Fprintf(w, fmt.Sprintf("IP: %s Location: %s\n", c.IpAddress, c.Location))
 	}
+	w.WriteHeader(200)
 }
 
 // Register a client to our internal server state
@@ -64,7 +67,9 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	vars := mux.Vars(r)
 	checkResult := models.CheckResult{
+		CheckID:      vars["id"],
 		Error:        isError,
 		ErrorMessage: errorMessage,
 		TotalTime:    time.Duration(totalTime) * time.Second,
@@ -89,6 +94,6 @@ func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 	s.r.HandleFunc("/checks", s.ListCheck).Methods("GET")
 	s.r.HandleFunc("/client/register", s.RegisterClient).Methods("POST")
 	s.r.HandleFunc("/clients", s.ListClient).Methods("GET")
-	s.r.HandleFunc("/check_results", s.CreateCheckResult).Methods("POST")
+	s.r.HandleFunc("/check_results/{id}", s.CreateCheckResult).Methods("POST")
 	return &s
 }
