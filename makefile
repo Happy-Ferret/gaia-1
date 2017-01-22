@@ -1,9 +1,13 @@
+GITHUB_USER=notyim
+GITHUB_REPO=gaia
+DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n')
+
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
 ifdef GOBIN
-PATH := $(GOBIN):$(PATH)
+	PATH := $(GOBIN):$(PATH)
 else
-PATH := $(subst :,/bin:,$(GOPATH))/bin:$(PATH)
+	PATH := $(subst :,/bin:,$(GOPATH))/bin:$(PATH)
 endif
 
 # Standard Gaia build
@@ -24,8 +28,8 @@ dev: prepare
 # Build linux 64-bit, 32-bit and arm architectures
 build-linux-bins: prepare
 	GOARCH=amd64 GOOS=linux go build -o gaia_linux_amd64 \
-								-ldflags "-X main.Version=$(VERSION)" \
-								./main.go
+				 -ldflags "-X main.Version=$(VERSION)" \
+				 ./main.go
 
 # Get dependencies and use gdm to checkout changesets
 prepare:
@@ -43,3 +47,20 @@ test-short:
 .PHONY: test-short
 
 deploy: build push
+
+github-release:
+	github-release release \
+		--user $(GITHUB_USER) \
+		--repo $(GITHUB_REPO) \
+		--tag $(VERSION) \
+		--name "RELEASE $(VERSION)" \
+		--description "$(DESCRIPTION)"
+
+	github-release upload \
+		--user $(GITHUB_USER) \
+		--repo $(GITHUB_REPO) \
+		--tag $(VERSION) \
+		--name "gaia-linux" \
+		--file gaia_linux_amd64
+
+release: build-linux-bins github-release
