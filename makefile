@@ -1,6 +1,6 @@
 GITHUB_USER=notyim
 GITHUB_REPO=gaia
-DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n')
+DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n 1')
 
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
@@ -62,5 +62,8 @@ github-release:
 		--tag $(VERSION) \
 		--name "gaia-linux" \
 		--file gaia_linux_amd64
+
+clean-influx:
+	echo "Clean influxdb"
 
 release: build-linux-bins github-release
