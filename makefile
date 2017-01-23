@@ -4,6 +4,8 @@ DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n 1')
 
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
+CURRENT_VERSION := $(shell sh -c 'git rev-parse --short HEAD')
+
 ifdef GOBIN
 	PATH := $(GOBIN):$(PATH)
 else
@@ -52,14 +54,14 @@ github-release:
 	github-release release \
 		--user $(GITHUB_USER) \
 		--repo $(GITHUB_REPO) \
-		--tag $(VERSION) \
-		--name "RELEASE $(VERSION)" \
+		--tag $(CURRENT_VERSION) \
+		--name "RELEASE $(CURRENT_VERSION)" \
 		--description "$(DESCRIPTION)"
 
 	github-release upload \
 		--user $(GITHUB_USER) \
 		--repo $(GITHUB_REPO) \
-		--tag $(VERSION) \
+		--tag $(CURRENT_VERSION) \
 		--name "gaia-linux" \
 		--file gaia_linux_amd64
 
@@ -67,3 +69,7 @@ clean-influx:
 	echo "Clean influxdb"
 
 release: build-linux-bins github-release
+
+# Production task
+ssh-deploy:
+	ssh noty "curl https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o /var/app/gaia/bin/gaia; systemctl restart gaia"
