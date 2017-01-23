@@ -72,4 +72,4 @@ release: build-linux-bins github-release
 
 # Production task
 ssh-deploy:
-	ssh noty "curl https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o /var/app/gaia/bin/gaia; systemctl restart gaia"
+	ssh noty "sudo curl https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o /var/app/gaia/bin/gaia; sudo systemctl restart gaia"
