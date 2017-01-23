@@ -5,6 +5,7 @@ DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n 1')
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
 CURRENT_VERSION := $(shell sh -c 'git rev-parse --short HEAD')
+PRODUCTION_PATH=/var/app/gaia/bin/gaia
 
 ifdef GOBIN
 	PATH := $(GOBIN):$(PATH)
@@ -72,4 +73,4 @@ release: build-linux-bins github-release
 
 # Production task
 ssh-deploy:
-	ssh noty "sudo curl https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o /var/app/gaia/bin/gaia; sudo systemctl restart gaia"
+	ssh noty "sudo systemctl stop gaia; sudo curl -L https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o $(PRODUCTION_PATH);sudo chmod 700 $(PRODUCTION_PATH); sudo systemctl daemon-reload; sudo systemctl restart gaia"
