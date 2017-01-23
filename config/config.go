@@ -26,6 +26,8 @@ type Config struct {
 	RethinkDBPass string
 	RethinkDBName string
 
+	MongoDBName string
+
 	GaiaServerHost   string
 	GaiaServerBindTo string
 	GaiaClientBindTo string
@@ -115,16 +117,22 @@ func NewConfig() *Config {
 		c.GaiaServerHost = "127.0.0.1:28301"
 	}
 
-	if val := os.Getenv("GaiaServerBindTo"); val != "" {
+	if val := os.Getenv("GAIA_SERVER_BINDTO"); val != "" {
 		c.GaiaServerBindTo = val
 	} else {
 		c.GaiaServerBindTo = "127.0.0.1:28300"
 	}
 
-	if val := os.Getenv("GaiaClientBindTo"); val != "" {
+	if val := os.Getenv("GAIA_CLIENT_BINDTO"); val != "" {
 		c.GaiaClientBindTo = val
 	} else {
 		c.GaiaClientBindTo = "127.0.0.1:28302"
+	}
+
+	if val := os.Getenv("MONGODB_NAME"); val != "" {
+		c.MongoDBName = val
+	} else {
+		c.MongoDBName = "trinity_development"
 	}
 
 	return c

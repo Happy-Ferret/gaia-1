@@ -69,7 +69,7 @@ func (s *Server) PushCheckToClients(check *models.Check) {
 
 // Initialize gaia server
 func Start(c *config.Config) {
-	mongo.Connect("127.0.0.1:27017", "trinity_development")
+	mongo.Connect("127.0.0.1:27017", config.MongoDBName)
 
 	log.Println("Initalize server and bind to", c.GaiaServerBindTo)
 
