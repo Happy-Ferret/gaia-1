@@ -72,7 +72,7 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 
 func (h *HTTPServer) Stats(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Gaia Ok")
-	w.WriteHeader(http.StatusOk)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
