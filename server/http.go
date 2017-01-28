@@ -70,6 +70,11 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func (h *HTTPServer) Stats(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Gaia Ok")
+	w.WriteHeader(http.StatusOk)
+}
+
 func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 	isError := (r.FormValue("Error") == "true")
 	errorMessage := r.FormValue("ErrorMessage")
@@ -116,6 +121,7 @@ func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 		r:       mux.NewRouter(),
 	}
 
+	s.r.HandleFunc("/", s.Stats).Methods("GET")
 	s.r.HandleFunc("/checks", s.ListCheck).Methods("GET")
 	s.r.HandleFunc("/client/register", s.RegisterClient).Methods("POST")
 	s.r.HandleFunc("/clients", s.ListClient).Methods("GET")
