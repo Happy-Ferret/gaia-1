@@ -70,8 +70,13 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func (h *HTTPServer) Install(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "#!/bin/bash\necho install run")
+	w.WriteHeader(http.StatusOK)
+}
+
 func (h *HTTPServer) Stats(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Gaia Ok")
+	fmt.Fprintf(w, "Gaia Ok\n.Install server with.\ncurl https://gaia.noty.im/install | bash")
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -122,6 +127,7 @@ func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 	}
 
 	s.r.HandleFunc("/", s.Stats).Methods("GET")
+	s.r.HandleFunc("/install", s.Install).Methods("GET")
 	s.r.HandleFunc("/checks", s.ListCheck).Methods("GET")
 	s.r.HandleFunc("/client/register", s.RegisterClient).Methods("POST")
 	s.r.HandleFunc("/clients", s.ListClient).Methods("GET")
