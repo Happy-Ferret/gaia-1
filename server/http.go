@@ -76,7 +76,7 @@ func (h *HTTPServer) Install(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPServer) Stats(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Gaia Ok\n.Install server with.\ncurl https://gaia.noty.im/install | bash")
+	fmt.Fprintf(w, "Gaia Ok\n.Install server with.\ncurl -s https://gaia.noty.im/install | bash")
 	w.WriteHeader(http.StatusOK)
 }
 
