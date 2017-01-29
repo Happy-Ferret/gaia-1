@@ -2,7 +2,7 @@ package server
 
 import (
 	//"fmt"
-	//"github.com/jrallison/go-workers"
+	"github.com/jrallison/go-workers"
 	"github.com/notyim/gaia/models"
 	//"github.com/notyim/gaia/types"
 	//"log"
@@ -52,8 +52,9 @@ func (f *Flusher) Start() {
 
 // Flush result to InfluxDB, and queue job to check
 func (f *Flusher) Flush(checkResult *models.CheckResult) bool {
-	//TODO: We should use a consumer channerl to process this instead of spawing goroutine instantly
 	checkResult.Save()
 
+	// Queu check and close job to sidekiq
+	workers.Enqueue("check", "CheckToCreateIncidentWorker", []string{"hello"})
 	return true
 }

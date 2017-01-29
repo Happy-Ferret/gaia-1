@@ -80,6 +80,9 @@ func Start(c *config.Config) {
 	s.SyncChecks()
 	go s.HTTPServer.Start(c.GaiaServerBindTo)
 
+	//@TODO Move this to config
+	CreateWorker("localhost:6379", "0", "30")
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 
