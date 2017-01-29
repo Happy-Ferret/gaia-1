@@ -110,8 +110,7 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 		TotalTime:    time.Duration(int64(time.Millisecond) * int64(totalTime)),
 		TotalSize:    totalSize,
 	}
-	//TODO: We should use a consumer channerl to process this instead of spawing goroutine instantly
-	go checkResult.Save()
+	h.flusher.Write(&checkResult)
 
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "OK")
