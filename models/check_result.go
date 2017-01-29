@@ -5,9 +5,14 @@ import (
 	"github.com/notyim/gaia/db/influxdb"
 	"github.com/notyim/gaia/types"
 	"log"
+	"time"
 )
 
 type CheckResult types.HTTPCheckResponse
+
+func (c *CheckResult) TotalTimeAsInt() int {
+	return int(c.TotalTime / time.Millisecond)
+}
 
 func (c *CheckResult) Point() *client.Point {
 	tags := map[string]string{
@@ -16,7 +21,7 @@ func (c *CheckResult) Point() *client.Point {
 
 	fields := map[string]interface{}{
 		"TotalSize": c.TotalSize,
-		"TotalTime": c.TotalTime,
+		"TotalTime": c.TotalTimeAsInt(),
 		"Error":     c.Error,
 	}
 
