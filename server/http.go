@@ -5,13 +5,14 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	//"github.com/notyim/gaia/types"
+	"encoding/json"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/models"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
+	//"strconv"
+	//"time"
 )
 
 type HTTPServer struct {
@@ -81,35 +82,19 @@ func (h *HTTPServer) Stats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
-	isError := (r.FormValue("Error") == "true")
-	errorMessage := r.FormValue("ErrorMessage")
+	checkResult := models.CheckResult{}
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&checkResult)
 
-	totalTime, err1 := strconv.Atoi(r.FormValue("TotalTime"))
-	totalSize, err2 := strconv.Atoi(r.FormValue("TotalSize"))
-	if err1 != nil || err2 != nil {
-		log.Println("Fail to parse int", err1, err2)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "OK")
-		return
-	}
-
-	checkedAt, err := strconv.Atoi(r.FormValue("CheckedAt"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("Fail to parse CheckedAt", err)
-		fmt.Fprintf(w, "OK")
+		log.Println("Fail to parse Check Result body", err)
+		fmt.Fprintf(w, "Fail to parse Check Result body", err)
 		return
 	}
 
-	vars := mux.Vars(r)
-	checkResult := models.CheckResult{
-		CheckedAt:    time.Unix(0, int64(checkedAt)),
-		CheckID:      vars["id"],
-		Error:        isError,
-		ErrorMessage: errorMessage,
-		TotalTime:    time.Duration(int64(time.Millisecond) * int64(totalTime)),
-		TotalSize:    totalSize,
-	}
+	log.Println(checkResult)
+
 	h.flusher.Write(&checkResult)
 
 	w.WriteHeader(http.StatusAccepted)

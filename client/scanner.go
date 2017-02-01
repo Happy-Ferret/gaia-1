@@ -15,7 +15,7 @@ import (
 	"net/http/httptrace"
 	"net/url"
 	"sort"
-	"strconv"
+	//"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -173,6 +173,8 @@ func (s *Scanner) Execute(check *types.Check) {
 		CheckID: check.ID,
 		Time:    make(map[string]time.Duration),
 		Http:    make(map[string]string),
+		Tcp:     make(map[string]string),
+		Headers: make(map[string]string),
 		Error:   false,
 	}
 
@@ -327,22 +329,6 @@ func visit(url *url.URL, response *types.HTTPCheckResponse) {
 		//printf("%s %s\n", grayscale(14)(k+":"), color.CyanString(strings.Join(resp.Header[k], ",")))
 		response.Headers[k] = strings.Join(resp.Header[k], ",")
 	}
-
-	fmta := func(d time.Duration) string {
-		return fmt.Sprintf("%7dms", int(d/time.Millisecond))
-	}
-
-	fmtb := func(d time.Duration) string {
-		return fmt.Sprintf("%-9s", strconv.Itoa(int(d/time.Millisecond))+"ms")
-	}
-
-	colorize := func(s string) string {
-		v := strings.Split(s, "\n")
-		v[0] = " - "
-		return strings.Join(v, "\n")
-	}
-
-	fmt.Println()
 
 	switch url.Scheme {
 	case "https":

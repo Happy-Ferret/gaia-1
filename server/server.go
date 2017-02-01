@@ -62,7 +62,7 @@ func (s *Server) PushCheckToClients(check *models.Check) {
 			url.Values{"id": {check.ID.Hex()}, "uri": {check.URI}, "type": {check.Type}})
 		log.Println("Push", check, "to client", c)
 		if err != nil {
-			log.Fatal("Fail to push check to client", err)
+			log.Println("Error Fail to push check to client", err)
 		}
 	}
 }

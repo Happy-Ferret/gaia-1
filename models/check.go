@@ -51,7 +51,7 @@ func AllChecks(c *[]Check) error {
 
 func FindChecksAfter(c *[]Check, id bson.ObjectId) error {
 	return mongo.Query(func(session *mgo.Database) error {
-		session.C("checks").Find(bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex("587474e28c245553950153bd")}}).Sort("_id").All(c)
+		session.C("checks").Find(bson.M{"_id": bson.M{"$gt": bson.ObjectIdHex(id.Hex())}}).Sort("_id").All(c)
 		log.Println("Found", c)
 		return nil
 	})

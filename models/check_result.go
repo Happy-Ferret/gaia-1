@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"github.com/influxdata/influxdb/client/v2"
 	"github.com/notyim/gaia/db/influxdb"
 	"github.com/notyim/gaia/types"
@@ -14,24 +15,30 @@ func (c *CheckResult) TotalTimeAsInt() int {
 	return int(c.Time["Total"] / time.Millisecond)
 }
 
+func (c *CheckResult) ToJson() []byte {
+	body, err := json.Marshal(c)
+	if err != nil {
+		return nil
+	}
+	return body
+}
+
 func (c *CheckResult) Point() *client.Point {
 	tags := map[string]string{
 		"CheckID": c.CheckID,
 	}
 
 	fields := map[string]interface{}{
-		"TotalTime": c.TotalTimeAsInt(),
-		"Error":     c.Error,
+		"Error": c.Error,
 	}
 
-	if c.Error {
-		fields["ErrorMessage"] = c.ErrorMessage
+	for k, v := range c.Time {
+		fields["Time"+k] = int(v / time.Millisecond)
 	}
+	fields["BodySize"] = len(c.Body)
 
 	point, err := client.NewPoint("http_response", tags, fields, c.CheckedAt)
-
 	if err != nil {
-		//TODO log error
 		log.Println("Cannot create point", err)
 		return nil
 	}

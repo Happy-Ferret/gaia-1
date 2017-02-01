@@ -53,8 +53,6 @@ func (f *Flusher) Start() {
 // Flush result to InfluxDB, and queue job to check
 func (f *Flusher) Flush(checkResult *models.CheckResult) bool {
 	checkResult.Save()
-
-	// Queu check and close job to sidekiq
-	workers.Enqueue("check", "CheckToCreateIncidentWorker", []string{"hello"})
+	workers.Enqueue("check", "CheckToCreateIncidentWorker", []string{checkResult.CheckID, string(checkResult.ToJson())})
 	return true
 }
