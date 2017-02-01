@@ -11,12 +11,13 @@ type Check struct {
 }
 
 type HTTPCheckResponse struct {
-	CheckedAt    time.Time
-	CheckID      string
-	TotalTime    time.Duration
-	TotalSize    int
-	HeaderSize   int
-	BodySize     int
-	Error        bool
-	ErrorMessage string
+	CheckedAt    time.Time                `json:"checked_at"`
+	CheckID      string                   `json:"check_id"`
+	Time         map[string]time.Duration `json:"time"`
+	Body         string                   `json:"body"`
+	Http         map[string]string        `json:"http"`
+	Headers      map[string]string        `json:"http"`
+	Tcp          map[string]string        `json:"tcp"`
+	Error        bool                     `json:"error"`
+	ErrorMessage string                   `json:"error_message"`
 }

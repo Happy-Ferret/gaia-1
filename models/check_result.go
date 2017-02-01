@@ -11,7 +11,7 @@ import (
 type CheckResult types.HTTPCheckResponse
 
 func (c *CheckResult) TotalTimeAsInt() int {
-	return int(c.TotalTime / time.Millisecond)
+	return int(c.Time["Total"] / time.Millisecond)
 }
 
 func (c *CheckResult) Point() *client.Point {
@@ -20,7 +20,6 @@ func (c *CheckResult) Point() *client.Point {
 	}
 
 	fields := map[string]interface{}{
-		"TotalSize": c.TotalSize,
 		"TotalTime": c.TotalTimeAsInt(),
 		"Error":     c.Error,
 	}

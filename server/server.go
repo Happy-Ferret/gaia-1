@@ -38,7 +38,7 @@ func (s *Server) SyncChecks() {
 
 	log.Println("Found check %v", s.Checks)
 
-	ticker := time.NewTicker(time.Second * 60)
+	ticker := time.NewTicker(time.Second * 3)
 	// Setup go routine for periodically sync
 	go func() {
 		for t := range ticker.C {
