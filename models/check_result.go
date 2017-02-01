@@ -25,17 +25,17 @@ func (c *CheckResult) ToJson() []byte {
 
 func (c *CheckResult) Point() *client.Point {
 	tags := map[string]string{
-		"CheckID": c.CheckID,
+		"check_id": c.CheckID,
 	}
 
 	fields := map[string]interface{}{
-		"Error": c.Error,
+		"error": c.Error,
 	}
 
 	for k, v := range c.Time {
-		fields["Time"+k] = int(v / time.Millisecond)
+		fields["time_"+k] = int(v / time.Millisecond)
 	}
-	fields["BodySize"] = len(c.Body)
+	fields["body_size"] = len(c.Body)
 
 	point, err := client.NewPoint("http_response", tags, fields, c.CheckedAt)
 	if err != nil {

@@ -36,7 +36,7 @@ func (s *Server) SyncChecks() {
 	models.AllChecks(&checks)
 	s.Checks = checks
 
-	log.Println("Found check %v", s.Checks)
+	log.Println("Found check:\n%v\n\n", s.Checks)
 
 	ticker := time.NewTicker(time.Second * 3)
 	// Setup go routine for periodically sync

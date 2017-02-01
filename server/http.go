@@ -93,8 +93,6 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(checkResult)
-
 	h.flusher.Write(&checkResult)
 
 	w.WriteHeader(http.StatusAccepted)
