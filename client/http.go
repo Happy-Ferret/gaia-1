@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type HTTPServer struct {
@@ -20,7 +21,7 @@ func (h *HTTPServer) RegisterCheck(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	uri := r.FormValue("uri")
 	checkType := r.FormValue("type")
-	check := types.Check{id, uri, checkType}
+	check := types.Check{id, uri, checkType, time.Duration(30) * time.Second}
 	h.scanner.AddCheck(&check)
 
 	w.WriteHeader(http.StatusAccepted)

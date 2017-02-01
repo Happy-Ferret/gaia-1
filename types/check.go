@@ -5,9 +5,10 @@ import (
 )
 
 type Check struct {
-	ID   string
-	URI  string
-	Type string
+	ID       string
+	URI      string
+	Type     string
+	Interval time.Duration
 }
 
 type HTTPCheckResponse struct {
@@ -16,7 +17,7 @@ type HTTPCheckResponse struct {
 	Time         map[string]time.Duration `json:"time"`
 	Body         string                   `json:"body"`
 	Http         map[string]string        `json:"http"`
-	Headers      map[string]string        `json:"http"`
+	Headers      map[string]string        `json:"headers"`
 	Tcp          map[string]string        `json:"tcp"`
 	Error        bool                     `json:"error"`
 	ErrorMessage string                   `json:"error_message"`
