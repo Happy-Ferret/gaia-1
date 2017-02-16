@@ -218,9 +218,12 @@ func createBody(body string) io.Reader {
 
 func newRequest(method string, url *url.URL, body string) *http.Request {
 	req, err := http.NewRequest(method, url.String(), createBody(body))
+
 	if err != nil {
 		log.Fatalf("unable to create request: %v", err)
 	}
+	req.Header.Set("User-Agent", "notyim/1.0")
+
 	//for _, h := range httpHeaders {
 	//	k, v := headerKeyValue(h)
 	//	if strings.EqualFold(k, "host") {
