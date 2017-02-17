@@ -99,7 +99,7 @@ func NewScanner(gaiaServerHost string) *Scanner {
 		f:                  NewFlusher(gaiaServerHost),
 	}
 
-	s.Sync()
+	go s.Sync()
 	go s.Listen()
 	go s.Monitor()
 
@@ -125,7 +125,9 @@ func (s *Scanner) Sync() {
 	resp, err := http.Get(fmt.Sprintf("%s/checks", s.GaiaServerHost))
 
 	if err != nil {
-		log.Fatalf("Cannot sync initialize check %v", err)
+		log.Println("Error: Cannot sync initialize check %v", err)
+		//TODO Periodically re-sync when gaia is back
+		return
 	}
 	defer resp.Body.Close()
 	log.Println("Got initial set of checks. Start decoding checks result set.")

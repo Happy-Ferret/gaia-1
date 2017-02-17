@@ -68,7 +68,7 @@ func (c *Client) Register() {
 			url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
 		log.Println("Register myself as", c.IpAddress, "at", c.Location)
 		if err != nil {
-			log.Fatal("Fail to register client", err)
+			log.Println("Error: Fail to register client", err)
 		}
 	}
 	register()

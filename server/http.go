@@ -23,7 +23,9 @@ type HTTPServer struct {
 
 func (h *HTTPServer) Start(bindTo string) {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, h.r)
-	log.Println(http.ListenAndServe(bindTo, loggedRouter))
+	if err := http.ListenAndServe(bindTo, loggedRouter); err != nil {
+		log.Fatal("Error: Gaia HTTP server error", err)
+	}
 }
 
 // Handle register a new check on http interface
