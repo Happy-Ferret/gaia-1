@@ -33,6 +33,10 @@ type Scanner struct {
 	m                  *sync.Mutex
 	CheckRegisterQueue chan string
 	f                  *Flusher
+
+	transport    *http.Transport
+	transportTLS *http.Transport
+	httpClient   *http.Client
 }
 
 type headers []string
@@ -97,6 +101,24 @@ func NewScanner(gaiaServerHost string) *Scanner {
 		m:                  &sync.Mutex{},
 		CheckRegisterQueue: make(chan string),
 		f:                  NewFlusher(gaiaServerHost),
+	}
+
+	s.transport = &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       30 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	s.httpClient = &http.Client{
+		Transport: s.transport,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// always refuse to follow redirects, visit does that
+			// manually if required.
+			return http.ErrUseLastResponse
+		},
+		Timeout: 15 * time.Second,
 	}
 
 	go s.Sync()
@@ -181,7 +203,7 @@ func (s *Scanner) Execute(check *types.Check) {
 	}
 
 	url := parseURL(check.URI)
-	visit(url, &response)
+	visit(s, url, &response)
 	s.f.Write(&response)
 }
 
@@ -237,7 +259,7 @@ func newRequest(method string, url *url.URL, body string) *http.Request {
 	return req
 }
 
-func visit(url *url.URL, response *types.HTTPCheckResponse) {
+func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 	postBody := ""
 	req := newRequest("GET", url, postBody)
 
@@ -265,14 +287,7 @@ func visit(url *url.URL, response *types.HTTPCheckResponse) {
 	}
 	req = req.WithContext(httptrace.WithClientTrace(context.Background(), trace))
 
-	tr := &http.Transport{
-		Proxy:                 http.ProxyFromEnvironment,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	}
-
+	client := s.httpClient
 	switch url.Scheme {
 	case "https":
 		host, _, err := net.SplitHostPort(req.Host)
@@ -280,7 +295,16 @@ func visit(url *url.URL, response *types.HTTPCheckResponse) {
 			host = req.Host
 		}
 
-		tr.TLSClientConfig = &tls.Config{
+		tr := &http.Transport{
+			Proxy:                 http.ProxyFromEnvironment,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       30 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
+
+		client.Transport = tr
+		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
 			ServerName:         host,
 			InsecureSkipVerify: false,
 			Certificates:       nil,
@@ -288,21 +312,12 @@ func visit(url *url.URL, response *types.HTTPCheckResponse) {
 
 		// Because we create a custom TLSClientConfig, we have to opt-in to HTTP/2.
 		// See https://github.com/golang/go/issues/14275
-		err = http2.ConfigureTransport(tr)
+		err = http2.ConfigureTransport(client.Transport.(*http.Transport))
 		if err != nil {
 			response.Error = true
 			response.ErrorMessage = fmt.Sprintf("failed to prepare transport for HTTP/2: %v", err)
 			return
 		}
-	}
-
-	client := &http.Client{
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// always refuse to follow redirects, visit does that
-			// manually if required.
-			return http.ErrUseLastResponse
-		},
 	}
 
 	resp, err := client.Do(req)
@@ -376,7 +391,7 @@ func visit(url *url.URL, response *types.HTTPCheckResponse) {
 			log.Fatalf("maximum number of redirects (%d) followed", maxRedirects)
 		}
 
-		visit(loc, response)
+		visit(s, loc, response)
 	}
 }
 

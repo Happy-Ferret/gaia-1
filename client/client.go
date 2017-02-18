@@ -15,6 +15,7 @@ type Client struct {
 	IpAddress      string
 	Location       string
 	GaiaServerHost string
+	httpClient     *http.Client
 }
 
 // Initliaze gaia client
@@ -55,6 +56,7 @@ func NewClient(gaia string) *Client {
 		IpAddress:      ip,
 		Location:       location,
 		GaiaServerHost: gaia,
+		httpClient:     createRequestClient(),
 	}
 
 	return &c
@@ -63,7 +65,7 @@ func NewClient(gaia string) *Client {
 // Register this client with Gaia server
 func (c *Client) Register() {
 	register := func() {
-		_, err := http.PostForm(
+		_, err := c.httpClient.PostForm(
 			fmt.Sprintf("%s/client/register", c.GaiaServerHost),
 			url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
 		log.Println("Register myself as", c.IpAddress, "at", c.Location)

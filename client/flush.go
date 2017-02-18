@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	//"net/url"
-	//"time"
 )
 
 const (
@@ -16,16 +15,18 @@ const (
 )
 
 type Flusher struct {
-	Host string
-	ch   chan *types.HTTPCheckResponse
-	quit chan bool
+	Host   string
+	ch     chan *types.HTTPCheckResponse
+	quit   chan bool
+	client *http.Client
 }
 
 func NewFlusher(to string) *Flusher {
 	f := Flusher{
-		Host: to,
-		ch:   make(chan *types.HTTPCheckResponse, MaxFlusher),
-		quit: make(chan bool),
+		Host:   to,
+		ch:     make(chan *types.HTTPCheckResponse, MaxFlusher),
+		quit:   make(chan bool),
+		client: createRequestClient(),
 	}
 
 	f.Start()
@@ -67,8 +68,7 @@ func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
 	log.Println("json body", string(body))
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	_, err = client.Do(req)
+	_, err = f.client.Do(req)
 
 	if err != nil {
 		log.Println("Fail to flush", res.CheckID, "err", err)
