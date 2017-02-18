@@ -45,8 +45,7 @@ func (s *Server) SyncChecks() {
 	ticker := time.NewTicker(time.Second * 3)
 	// Setup go routine for periodically sync
 	go func() {
-		for t := range ticker.C {
-			log.Println("Poll checks at", t)
+		for range ticker.C {
 			var checks []models.Check
 			models.FindChecksAfter(&checks, s.Checks[len(s.Checks)-1].ID)
 			s.Checks = append(s.Checks, checks...)
