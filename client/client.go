@@ -76,8 +76,7 @@ func (c *Client) Register() {
 	register()
 	ticker := time.NewTicker(time.Second * 60)
 	go func() {
-		for t := range ticker.C {
-			log.Println("Heartbeat to gaia at", t)
+		for range ticker.C {
 			register()
 		}
 	}()
