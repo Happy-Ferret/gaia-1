@@ -26,6 +26,7 @@ const MaxChecks = 10000
 const maxRedirects = 10
 
 type Scanner struct {
+	Address            types.ClientAddress
 	Checks             []*types.Check
 	CheckInterval      time.Duration
 	totalCheck         int
@@ -91,8 +92,9 @@ func (h headers) Less(i, j int) bool {
 	return x
 }
 
-func NewScanner(gaiaServerHost string) *Scanner {
+func NewScanner(gaiaServerHost string, address types.ClientAddress) *Scanner {
 	s := Scanner{
+		Address:            address,
 		Checks:             make([]*types.Check, MaxChecks),
 		totalCheck:         0,
 		CheckInterval:      15 * time.Second,
@@ -259,36 +261,75 @@ func newRequest(method string, url *url.URL, body string) *http.Request {
 	return req
 }
 
+func collectTime(protocol string, response *types.HTTPCheckResponse, t0, t1, t2, t3, t4, t5 time.Time) {
+	switch protocol {
+	case "https":
+		response.Time["DNSLookup"] = t1.Sub(t0)
+
+		if t1.IsZero() == false && t2.IsZero() == false {
+			response.Time["TcpConnection"] = t2.Sub(t1)
+		}
+		if t2.IsZero() == false && t3.IsZero() == false {
+			response.Time["TlsHandshake"] = t3.Sub(t2)
+		}
+
+		if t3.IsZero() == false && t4.IsZero() == false {
+			response.Time["ServerProcessing"] = t4.Sub(t3)
+		}
+		if t4.IsZero() == false && t5.IsZero() == false {
+			response.Time["ContentTransfer"] = t5.Sub(t4)
+		}
+		if t1.IsZero() == false && t0.IsZero() == false {
+			response.Time["NameLookup"] = t1.Sub(t0)
+		}
+		if t2.IsZero() == false && t0.IsZero() == false {
+			response.Time["Connect"] = t2.Sub(t0)
+		}
+		if t3.IsZero() == false && t0.IsZero() == false {
+			response.Time["Pretransfer"] = t3.Sub(t0)
+		}
+		if t4.IsZero() == false && t0.IsZero() == false {
+			response.Time["StartTransfer"] = t4.Sub(t0)
+		}
+		if t5.IsZero() == false && t0.IsZero() == false {
+			response.Time["Total"] = t5.Sub(t0)
+		}
+	case "http":
+		if t1.IsZero() == false && t0.IsZero() == false {
+			response.Time["DNSLookup"] = t1.Sub(t0)
+		}
+		if t3.IsZero() == false && t1.IsZero() == false {
+			response.Time["TcpConnection"] = t3.Sub(t1)
+		}
+		if t4.IsZero() == false && t3.IsZero() == false {
+			response.Time["ServerProcessing"] = t4.Sub(t3)
+		}
+		if t5.IsZero() == false && t4.IsZero() == false {
+			response.Time["ContentTransfer"] = t5.Sub(t4)
+		}
+		if t1.IsZero() == false && t0.IsZero() == false {
+			response.Time["NameLookup"] = t1.Sub(t0)
+		}
+		if t3.IsZero() == false && t0.IsZero() == false {
+			response.Time["Connect"] = t3.Sub(t0)
+		}
+		if t4.IsZero() == false && t0.IsZero() == false {
+			response.Time["StartTransfer"] = t4.Sub(t0)
+		}
+		if t5.IsZero() == false && t0.IsZero() == false {
+			response.Time["Total"] = t5.Sub(t0)
+		}
+	}
+}
+
 func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
+	response.FromIp = s.Address.IpAddress
+	response.FromRegion = s.Address.Location
+
 	postBody := ""
 	req := newRequest("GET", url, postBody)
 
 	var t0, t1, t2, t3, t4, t5 time.Time
-
-	gather := func() {
-		switch url.Scheme {
-		case "https":
-			response.Time["DNSLookup"] = t1.Sub(t0)
-			response.Time["TcpConnection"] = t2.Sub(t1)
-			response.Time["TlsHandshake"] = t3.Sub(t2)
-			response.Time["ServerProcessing"] = t4.Sub(t3)
-			response.Time["ContentTransfer"] = t5.Sub(t4)
-			response.Time["NameLookup"] = t1.Sub(t0)
-			response.Time["Connect"] = t2.Sub(t0)
-			response.Time["Pretransfer"] = t3.Sub(t0)
-			response.Time["StartTransfer"] = t4.Sub(t0)
-			response.Time["Total"] = t5.Sub(t0)
-		case "http":
-			response.Time["DNSLookup"] = t1.Sub(t0)
-			response.Time["TcpConnection"] = t3.Sub(t1)
-			response.Time["ServerProcessing"] = t4.Sub(t3)
-			response.Time["ContentTransfer"] = t5.Sub(t4)
-			response.Time["NameLookup"] = t1.Sub(t0)
-			response.Time["Connect"] = t3.Sub(t0)
-			response.Time["StartTransfer"] = t4.Sub(t0)
-			response.Time["Total"] = t5.Sub(t0)
-		}
-	}
 
 	trace := &httptrace.ClientTrace{
 		DNSStart: func(_ httptrace.DNSStartInfo) { t0 = time.Now() },
@@ -341,7 +382,9 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 		if err != nil {
 			response.Error = true
 			response.ErrorMessage = fmt.Sprintf("failed to prepare transport for HTTP/2: %v", err)
-			gather()
+			// We has error, so set these time here becausr they will not set in their callback
+			t5 = time.Now()
+			collectTime(url.Scheme, response, t0, t1, t2, t3, t4, t5)
 			return
 		}
 	}
@@ -350,7 +393,8 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 	if err != nil {
 		response.Error = true
 		response.ErrorMessage = fmt.Sprintf("failed to read response: %v", err)
-		gather()
+		t5 = time.Now() // after read body
+		collectTime(url.Scheme, response, t0, t1, t2, t3, t4, t5)
 		return
 	}
 
@@ -379,7 +423,7 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 		response.Headers[k] = strings.Join(resp.Header[k], ",")
 	}
 
-	gather()
+	collectTime(url.Scheme, response, t0, t1, t2, t3, t4, t5)
 
 	// Temp disable follow, TODO fix this
 	followRedirects := false

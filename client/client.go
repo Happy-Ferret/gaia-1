@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/notyim/gaia/types"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,8 +13,7 @@ import (
 )
 
 type Client struct {
-	IpAddress      string
-	Location       string
+	Address        types.ClientAddress
 	GaiaServerHost string
 	httpClient     *http.Client
 }
@@ -28,7 +28,7 @@ func Start(gaia string) {
 	c.Register()
 
 	log.Println("Create scanner")
-	s := NewScanner(c.GaiaServerHost)
+	s := NewScanner(c.GaiaServerHost, c.Address)
 	s.Start()
 
 	log.Println("Create http listener")
@@ -53,8 +53,7 @@ func NewClient(gaia string) *Client {
 	}
 
 	c := Client{
-		IpAddress:      ip,
-		Location:       location,
+		Address:        types.ClientAddress{ip, location},
 		GaiaServerHost: gaia,
 		httpClient:     createRequestClient(),
 	}
@@ -64,12 +63,11 @@ func NewClient(gaia string) *Client {
 
 // Register this client with Gaia server
 func (c *Client) Register() {
+	payload := url.Values{"ip": {c.Address.IpAddress}, "location": {c.Address.Location}}
+	log.Println("Register myself as", c.Address)
+
 	register := func() {
-		_, err := c.httpClient.PostForm(
-			fmt.Sprintf("%s/client/register", c.GaiaServerHost),
-			url.Values{"ip": {c.IpAddress}, "location": {c.Location}})
-		log.Println("Register myself as", c.IpAddress, "at", c.Location)
-		if err != nil {
+		if _, err := c.httpClient.PostForm(fmt.Sprintf("%s/client/register", c.GaiaServerHost), payload); err != nil {
 			log.Println("Error: Fail to register client", err)
 		}
 	}

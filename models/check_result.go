@@ -38,6 +38,8 @@ func (c *CheckResult) Point() *client.Point {
 	fields["body_size"] = len(c.Body)
 	fields["status"] = c.Status
 	fields["status_code"] = c.StatusCode
+	fields["from_ip"] = c.FromIp
+	fields["from_region"] = c.FromRegion
 
 	point, err := client.NewPoint("http_response", tags, fields, c.CheckedAt)
 	if err != nil {

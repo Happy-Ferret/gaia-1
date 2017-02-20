@@ -61,7 +61,7 @@ func (s *Server) PushCheckToClients(check *models.Check) {
 	for _, c := range s.Clients {
 		// Implement https for client
 		// TODO We will dismiss all this and replica with a TCP with tls
-		_, err := http.PostForm(fmt.Sprintf("http://%s:28302/checks", c.IpAddress),
+		_, err := http.PostForm(fmt.Sprintf("http://%s:28302/checks", c.Address.IpAddress),
 			url.Values{"id": {check.ID.Hex()}, "uri": {check.URI}, "type": {check.Type}})
 		log.Println("Push", check, "to client", c)
 		if err != nil {

@@ -1,13 +1,13 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	//"github.com/notyim/gaia/types"
-	"encoding/json"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/models"
+	"github.com/notyim/gaia/types"
 	"log"
 	"net/http"
 	"os"
@@ -40,7 +40,7 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 	lines := ""
 	for _, c := range h.server.Clients {
 		log.Printf("Existing clients %v\n", h.server.Clients)
-		lines += fmt.Sprintf("IP: %s Location: %s\n", c.IpAddress, c.Location)
+		lines += fmt.Sprintf("IP: %s Location: %s\n", c.Address.IpAddress, c.Address.Location)
 	}
 	fmt.Fprintf(w, lines)
 	w.WriteHeader(200)
@@ -57,11 +57,13 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := client.Client{
-		IpAddress: ip,
-		Location:  location,
+		Address: types.ClientAddress{
+			IpAddress: ip,
+			Location:  location,
+		},
 	}
 	for _, c := range h.server.Clients {
-		if c.IpAddress == client.IpAddress {
+		if c.Address.IpAddress == client.Address.IpAddress {
 			w.WriteHeader(http.StatusAlreadyReported)
 			return
 		}
