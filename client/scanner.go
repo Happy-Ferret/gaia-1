@@ -34,9 +34,8 @@ type Scanner struct {
 	CheckRegisterQueue chan string
 	f                  *Flusher
 
-	transport    *http.Transport
-	transportTLS *http.Transport
-	httpClient   *http.Client
+	transport  *http.Transport
+	httpClient *http.Client
 }
 
 type headers []string
@@ -190,6 +189,7 @@ func (s *Scanner) Monitor() {
 	}
 }
 
+// Execute a check
 func (s *Scanner) Execute(check *types.Check) {
 	log.Println("Evaluate", check.URI)
 
@@ -263,7 +263,32 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 	postBody := ""
 	req := newRequest("GET", url, postBody)
 
-	var t0, t1, t2, t3, t4 time.Time
+	var t0, t1, t2, t3, t4, t5 time.Time
+
+	gather := func() {
+		switch url.Scheme {
+		case "https":
+			response.Time["DNSLookup"] = t1.Sub(t0)
+			response.Time["TcpConnection"] = t2.Sub(t1)
+			response.Time["TlsHandshake"] = t3.Sub(t2)
+			response.Time["ServerProcessing"] = t4.Sub(t3)
+			response.Time["ContentTransfer"] = t5.Sub(t4)
+			response.Time["NameLookup"] = t1.Sub(t0)
+			response.Time["Connect"] = t2.Sub(t0)
+			response.Time["Pretransfer"] = t3.Sub(t0)
+			response.Time["StartTransfer"] = t4.Sub(t0)
+			response.Time["Total"] = t5.Sub(t0)
+		case "http":
+			response.Time["DNSLookup"] = t1.Sub(t0)
+			response.Time["TcpConnection"] = t3.Sub(t1)
+			response.Time["ServerProcessing"] = t4.Sub(t3)
+			response.Time["ContentTransfer"] = t5.Sub(t4)
+			response.Time["NameLookup"] = t1.Sub(t0)
+			response.Time["Connect"] = t3.Sub(t0)
+			response.Time["StartTransfer"] = t4.Sub(t0)
+			response.Time["Total"] = t5.Sub(t0)
+		}
+	}
 
 	trace := &httptrace.ClientTrace{
 		DNSStart: func(_ httptrace.DNSStartInfo) { t0 = time.Now() },
@@ -303,12 +328,12 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 			ExpectContinueTimeout: 1 * time.Second,
 		}
 
-		client.Transport = tr
-		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
+		tr.TLSClientConfig = &tls.Config{
 			ServerName:         host,
 			InsecureSkipVerify: false,
 			Certificates:       nil,
 		}
+		client.Transport = tr
 
 		// Because we create a custom TLSClientConfig, we have to opt-in to HTTP/2.
 		// See https://github.com/golang/go/issues/14275
@@ -316,6 +341,7 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 		if err != nil {
 			response.Error = true
 			response.ErrorMessage = fmt.Sprintf("failed to prepare transport for HTTP/2: %v", err)
+			gather()
 			return
 		}
 	}
@@ -324,6 +350,7 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 	if err != nil {
 		response.Error = true
 		response.ErrorMessage = fmt.Sprintf("failed to read response: %v", err)
+		gather()
 		return
 	}
 
@@ -331,7 +358,7 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 	response.Body = bodyMsg
 	resp.Body.Close()
 
-	t5 := time.Now() // after read body
+	t5 = time.Now() // after read body
 	if t0.IsZero() {
 		// we skipped DNS
 		t0 = t1
@@ -339,6 +366,8 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 
 	// print status line and headers
 	//printf("\n%s%s%s\n", "HTTP", ("/"), color.CyanString("%d.%d %s", resp.ProtoMajor, resp.ProtoMinor, resp.Status))
+	response.Status = resp.Status
+	response.StatusCode = resp.StatusCode
 
 	names := make([]string, 0, len(resp.Header))
 	for k := range resp.Header {
@@ -350,28 +379,7 @@ func visit(s *Scanner, url *url.URL, response *types.HTTPCheckResponse) {
 		response.Headers[k] = strings.Join(resp.Header[k], ",")
 	}
 
-	switch url.Scheme {
-	case "https":
-		response.Time["DNSLookup"] = t1.Sub(t0)
-		response.Time["TcpConnection"] = t2.Sub(t1)
-		response.Time["TlsHandshake"] = t3.Sub(t2)
-		response.Time["ServerProcessing"] = t4.Sub(t3)
-		response.Time["ContentTransfer"] = t5.Sub(t4)
-		response.Time["NameLookup"] = t1.Sub(t0)
-		response.Time["Connect"] = t2.Sub(t0)
-		response.Time["Pretransfer"] = t3.Sub(t0)
-		response.Time["StartTransfer"] = t4.Sub(t0)
-		response.Time["Total"] = t5.Sub(t0)
-	case "http":
-		response.Time["DNSLookup"] = t1.Sub(t0)
-		response.Time["TcpConnection"] = t3.Sub(t1)
-		response.Time["ServerProcessing"] = t4.Sub(t3)
-		response.Time["ContentTransfer"] = t5.Sub(t4)
-		response.Time["NameLookup"] = t1.Sub(t0)
-		response.Time["Connect"] = t3.Sub(t0)
-		response.Time["StartTransfer"] = t4.Sub(t0)
-		response.Time["Total"] = t5.Sub(t0)
-	}
+	gather()
 
 	// Temp disable follow, TODO fix this
 	followRedirects := false

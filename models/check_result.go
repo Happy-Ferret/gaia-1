@@ -36,6 +36,8 @@ func (c *CheckResult) Point() *client.Point {
 		fields["time_"+k] = int(v / time.Millisecond)
 	}
 	fields["body_size"] = len(c.Body)
+	fields["status"] = c.Status
+	fields["status_code"] = c.StatusCode
 
 	point, err := client.NewPoint("http_response", tags, fields, c.CheckedAt)
 	if err != nil {
