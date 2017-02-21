@@ -70,6 +70,7 @@ github-release:
 		--name "gaia-linux" \
 		--file gaia_linux_amd64
 
+upload-package:
 	github-release upload \
 		--user $(GITHUB_USER) \
 		--repo $(GITHUB_REPO) \
@@ -79,7 +80,7 @@ github-release:
 
 build_deb_systemd: build
 	# gem install fpm
-	fpm -s dir -t deb -n $(NAME) -v $(VERSION) -p packaging/output/systemd \
+	fpm -s dir -t deb -n $(NAME) -v $(CURRENT_VERSION) -p packaging/output/systemd \
 		--deb-priority optional --category admin \
 		--deb-compression bzip2 \
 	 	--after-install packaging/scripts/postinst.deb.systemd \
@@ -91,7 +92,7 @@ build_deb_systemd: build
 		gaia_linux_amd64=/usr/bin/gaia \
 		packaging/root/=/
 
-package: build_deb_systemd upload_package
+package: build_deb_systemd upload-package
 
 clean-influx:
 	echo "Clean influxdb"
