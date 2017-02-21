@@ -99,7 +99,7 @@ package: clean_deb build_deb_systemd upload-package
 clean-influx:
 	echo "Clean influxdb"
 
-release: build-linux-bins build_deb_systemd github-release
+release: build-linux-bins build_deb_systemd github-release upload-package
 
 # Production task
 ssh-deploy:
