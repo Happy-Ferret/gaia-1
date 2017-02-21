@@ -74,7 +74,7 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HTTPServer) Install(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "#!/bin/bash\necho install run")
+	fmt.Fprintf(w, fmt.Sprintf("#!/bin/bash\necho Start Installer\ncurl -s https://github.com/NotyIm/gaia/releases/download/%s/gaia_am64.deb -o /tmp/gaia.deb\nsudo dpkg -i /tmp/gaia.deb\nrm /tmp/gaia.deb", types.Version))
 	w.WriteHeader(http.StatusOK)
 }
 
