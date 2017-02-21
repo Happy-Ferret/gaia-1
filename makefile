@@ -91,13 +91,15 @@ build_deb_systemd: build
 		--vendor "Noty" -a amd64 \
 		gaia_linux_amd64=/usr/bin/gaia \
 		packaging/root/=/
+clean_deb:
+	rm -rf packaging/output/systemd/*.*
 
-package: build_deb_systemd upload-package
+package: clean_deb build_deb_systemd upload-package
 
 clean-influx:
 	echo "Clean influxdb"
 
-release: build-linux-bins github-release
+release: build-linux-bins build_deb_systemd github-release
 
 # Production task
 ssh-deploy:
