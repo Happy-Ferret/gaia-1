@@ -76,7 +76,7 @@ upload-package:
 		--repo $(GITHUB_REPO) \
 		--tag $(CURRENT_VERSION) \
 		--name "gaia_amd64.deb" \
-		--file packaging/output/systemd/gaia_$(CURRENT_VERSION)-$(ITERATION)_amd64.deb
+		--file packaging/output/systemd/gaia_0.1-$(CURRENT_VERSION)-$(ITERATION)_amd64.deb
 
 build_deb_systemd: build
 	# gem install fpm
