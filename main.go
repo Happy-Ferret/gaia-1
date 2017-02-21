@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/notyim/gaia/cmd"
+	"github.com/notyim/gaia/types"
 	"log"
 )
 
@@ -25,5 +26,6 @@ var Version string
 
 func main() {
 	log.Printf("Starting Gaia (version %s)\n", Version)
+	types.Version = Version
 	cmd.Execute()
 }

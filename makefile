@@ -2,7 +2,7 @@ GITHUB_USER=notyim
 GITHUB_REPO=gaia
 DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n 1')
 NAME=gaia
-ITERATION=1
+ITERATION=2
 
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
@@ -21,7 +21,7 @@ default: prepare build
 # Only run the build (no dependency grabbing)
 build:
 	go build -o gaia -ldflags \
-		"-X main.Version=$(VERSION)" \
+		"-X main.Version=$(CURRENT_VERSION)" \
 		./main.go
 
 # Build with race detector
@@ -33,7 +33,7 @@ dev: prepare
 # Build linux 64-bit, 32-bit and arm architectures
 build-linux-bins: prepare
 	GOARCH=amd64 GOOS=linux go build -o gaia_linux_amd64 \
-				 -ldflags "-X main.Version=$(VERSION)" \
+				 -ldflags "-X main.Version=$(CURRENT_VERSION)" \
 				 ./main.go
 
 # Get dependencies and use gdm to checkout changesets
@@ -80,7 +80,7 @@ upload-package:
 
 build_deb_systemd: build
 	# gem install fpm
-	fpm -s dir -t deb -n $(NAME) -v $(CURRENT_VERSION) -p packaging/output/systemd \
+	fpm -s dir -t deb -n $(NAME) -v 0.1-$(CURRENT_VERSION) -p packaging/output/systemd \
 		--deb-priority optional --category admin \
 		--deb-compression bzip2 \
 	 	--after-install packaging/scripts/postinst.deb.systemd \
