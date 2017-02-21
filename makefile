@@ -1,6 +1,8 @@
 GITHUB_USER=notyim
 GITHUB_REPO=gaia
 DESCRIPTION=$(shell sh -c 'git log --pretty=oneline | head -n 1')
+NAME=gaia
+ITERATION=1
 
 UNAME := $(shell sh -c 'uname')
 VERSION := $(shell sh -c 'git describe --always --tags')
@@ -36,6 +38,8 @@ build-linux-bins: prepare
 
 # Get dependencies and use gdm to checkout changesets
 prepare:
+	brew install gnu-tar
+	gem install fpm
 	go get ./...
 
 sync:
@@ -65,6 +69,29 @@ github-release:
 		--tag $(CURRENT_VERSION) \
 		--name "gaia-linux" \
 		--file gaia_linux_amd64
+
+	github-release upload \
+		--user $(GITHUB_USER) \
+		--repo $(GITHUB_REPO) \
+		--tag $(CURRENT_VERSION) \
+		--name "gaia_amd64.deb" \
+		--file packaging/output/systemd/gaia_$(CURRENT_VERSION)-$(ITERATION)_amd64.deb
+
+build_deb_systemd: build
+	# gem install fpm
+	fpm -s dir -t deb -n $(NAME) -v $(VERSION) -p packaging/output/systemd \
+		--deb-priority optional --category admin \
+		--deb-compression bzip2 \
+	 	--after-install packaging/scripts/postinst.deb.systemd \
+		--url https://noty.im \
+		--description "Application infrastructure monitoring" \
+		-m "Noty <vinh@noty.im>" \
+		--iteration $(ITERATION) --license "GPL 3.0" \
+		--vendor "Noty" -a amd64 \
+		gaia_linux_amd64=/usr/bin/gaia \
+		packaging/root/=/
+
+package: build_deb_systemd upload_package
 
 clean-influx:
 	echo "Clean influxdb"
