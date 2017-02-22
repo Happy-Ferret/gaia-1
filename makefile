@@ -78,7 +78,7 @@ upload-package:
 		--name "gaia_amd64.deb" \
 		--file packaging/output/systemd/gaia_0.1-$(CURRENT_VERSION)-$(ITERATION)_amd64.deb
 
-build_deb_systemd: build
+build-deb-systemd: build
 	# gem install fpm
 	fpm -s dir -t deb -n $(NAME) -v 0.1-$(CURRENT_VERSION) -p packaging/output/systemd \
 		--deb-priority optional --category admin \
@@ -94,12 +94,12 @@ build_deb_systemd: build
 clean_deb:
 	rm -rf packaging/output/systemd/*.*
 
-package: clean_deb build_deb_systemd upload-package
+package: clean_deb build-deb-systemd upload-package
 
 clean-influx:
 	echo "Clean influxdb"
 
-release: build-linux-bins build_deb_systemd github-release upload-package
+release: build-linux-bins build-deb-systemd github-release upload-package
 
 # Production task
 ssh-deploy:
