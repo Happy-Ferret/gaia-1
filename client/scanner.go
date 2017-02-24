@@ -142,6 +142,15 @@ func (s *Scanner) Listen() {
 	}
 }
 
+// One time bulk request process
+func (s *Scanner) DoMulti(rawCheck []string) {
+	for _, line := range rawCheck {
+		c := strings.Split(line, ",")
+		check := types.Check{c[0], c[1], c[2], time.Duration(30) * time.Second}
+		s.Execute(&check)
+	}
+}
+
 // Connect to Gaia server to get initial check list
 // TODO: We will switch to a TCP server, it makes thing much simpler
 func (s *Scanner) Sync() {

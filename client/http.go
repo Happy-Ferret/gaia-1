@@ -5,11 +5,12 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/notyim/gaia/types"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"strings"
+	"time"
 )
 
 type HTTPServer struct {
@@ -18,16 +19,16 @@ type HTTPServer struct {
 }
 
 // Handle register a new check on http interface
-func (h *HTTPServer) BulkCheckRequest(w http.ResponseWriter, r *http.Request) {
-	b, _ := ioutil.ReadAll(r.Body)
-	rawCheck := strings.Split(b, "\n")
-	for _, c := range {
-		check := types.Check{id, uri, checkType, time.Duration(30) * time.Second
+func (h *HTTPServer) BulkChecks(w http.ResponseWriter, r *http.Request) {
+	b, e := ioutil.ReadAll(r.Body)
+	if e != nil {
+		// return right header
+		fmt.Fprintf(w, "Cannot process request")
+		return
 	}
 
-	check := types.Check{id, uri, checkType, time.Duration(30) * time.Second}
-	h.scanner.AddCheck(&check)
-
+	rawCheck := strings.Split(string(b), "\n")
+	h.scanner.Do(rawCheck)
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "OK")
 }
@@ -53,6 +54,7 @@ func CreateHTTPServer(scanner *Scanner) *HTTPServer {
 	}
 
 	s.r.HandleFunc("/checks", s.RegisterCheck).Methods("POST")
+	s.r.HandleFunc("/bulkchecks", s.BulkChecks).Methods("POST")
 	loggedRouter := handlers.LoggingHandler(os.Stdout, s.r)
 	log.Println(http.ListenAndServe("0.0.0.0:28302", loggedRouter))
 	return &s
