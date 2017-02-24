@@ -8,6 +8,7 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,38 +25,58 @@ type Server struct {
 	Checks     []models.Check
 	config     *config.Config
 	HTTPServer *HTTPServer
+	httpClient *net.HTTP
 }
 
 // Sync and keep track of checks from db
 // This is poorman changedfeed in MongoDB
 // I wish we can use RethinkDB here
 func (s *Server) SyncChecks() {
-	// Initial sync
-	//s.Checks.All()
 	var checks []models.Check
 	models.AllChecks(&checks)
 	s.Checks = checks
 
-	// Initilal full sync
-	for _, check := range checks {
-		s.PushCheckToClients(&check)
-	}
-
-	ticker := time.NewTicker(time.Second * 3)
+	ticker := time.NewTicker(time.Second * 15)
 	// Setup go routine for periodically sync
 	go func() {
-		log.Println("Init syncing")
+		shard := 0
+
 		for t := range ticker.C {
-			log.Println("Syncing at", t)
+			shard += 1
+
+			log.Println("Syncing at", t, "for shard", shard)
 
 			var checks []models.Check
-			models.FindChecksAfter(&checks, s.Checks[len(s.Checks)-1].ID)
-			s.Checks = append(s.Checks, checks...)
-			for _, check := range checks {
-				s.PushCheckToClients(&check)
+			models.FindChecksByShard(&checks, shard)
+			if checks != nil && len(checks) > 0 {
+				s.PushBulkCheckToClients(checks)
+			}
+			if shard >= 4 {
+				shard = 0
 			}
 		}
 	}()
+}
+
+func (s *Server) PushBulkCheckToClients(checks []models.Check) {
+	lines := make([]string, len(checks))
+	for i, check := range checks {
+		lines[i] = fmt.Sprintf("%s,%s,%s", check.ID, check.URI, check.Type)
+	}
+	payload := strings.Join(lines, "\n")
+	for _, c := range s.Clients {
+		// TODO We will dismiss all this and replica with a TCP with tls
+		req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:28302/bulkchecks", c.Address.IpAddress), bytes.NewBufferString(payload))
+		if err != nil {
+			log.Println("Error Fail to create http request", err)
+			continue
+		}
+		_, err := s.httpClient.Do(req)
+		if err != nil {
+			log.Println("Error fail to push bulk checks to client", err)
+		}
+	}
+
 }
 
 //Push new checks to client
@@ -100,7 +121,8 @@ func Start(c *config.Config) {
 
 func NewServer(c *config.Config) *Server {
 	s := Server{
-		config: c,
+		config:     c,
+		httpClient: &http.Client{},
 	}
 
 	h := CreateHTTPServer(&s, NewFlusher())

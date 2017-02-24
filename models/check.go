@@ -54,3 +54,16 @@ func FindChecksAfter(c *[]Check, id bson.ObjectId) error {
 		return nil
 	})
 }
+
+// Find check by split all checks into shard
+func FindChecksByShard(c *[]Check, shard int) error {
+	return mongo.Query(func(session *mgo.Database) error {
+		if t, e := session.C("checks").Count(); e != nil {
+			limit := t/4 + 1
+
+			session.C("checks").Find(nil).Sort("_id").Skip(shard * limit).Limit(limit).All(c)
+		}
+
+		return nil
+	})
+}

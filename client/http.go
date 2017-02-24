@@ -9,11 +9,27 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"strings"
 )
 
 type HTTPServer struct {
 	r       *mux.Router
 	scanner *Scanner
+}
+
+// Handle register a new check on http interface
+func (h *HTTPServer) BulkCheckRequest(w http.ResponseWriter, r *http.Request) {
+	b, _ := ioutil.ReadAll(r.Body)
+	rawCheck := strings.Split(b, "\n")
+	for _, c := range {
+		check := types.Check{id, uri, checkType, time.Duration(30) * time.Second
+	}
+
+	check := types.Check{id, uri, checkType, time.Duration(30) * time.Second}
+	h.scanner.AddCheck(&check)
+
+	w.WriteHeader(http.StatusAccepted)
+	fmt.Fprintf(w, "OK")
 }
 
 // Handle register a new check on http interface
