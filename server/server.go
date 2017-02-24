@@ -38,14 +38,16 @@ func (s *Server) SyncChecks() {
 
 	// Initilal full sync
 	for _, check := range checks {
-		log.Println("Sync", check)
 		s.PushCheckToClients(&check)
 	}
 
 	ticker := time.NewTicker(time.Second * 3)
 	// Setup go routine for periodically sync
 	go func() {
-		for range ticker.C {
+		log.Println("Init syncing")
+		for t := range ticker.C {
+			log.Println("Syncing at", t)
+
 			var checks []models.Check
 			models.FindChecksAfter(&checks, s.Checks[len(s.Checks)-1].ID)
 			s.Checks = append(s.Checks, checks...)
@@ -58,6 +60,7 @@ func (s *Server) SyncChecks() {
 
 //Push new checks to client
 func (s *Server) PushCheckToClients(check *models.Check) {
+	log.Println("Sync Check", check, "to client")
 	for _, c := range s.Clients {
 		// Implement https for client
 		// TODO We will dismiss all this and replica with a TCP with tls
