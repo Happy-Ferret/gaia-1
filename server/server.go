@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/config"
@@ -8,11 +9,11 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
-	"math"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -25,31 +26,29 @@ type Server struct {
 	Checks     []models.Check
 	config     *config.Config
 	HTTPServer *HTTPServer
-	httpClient *net.HTTP
+	httpClient *http.Client
 }
 
 // Sync and keep track of checks from db
 // This is poorman changedfeed in MongoDB
 // I wish we can use RethinkDB here
 func (s *Server) SyncChecks() {
-	var checks []models.Check
-	models.AllChecks(&checks)
-	s.Checks = checks
-
-	ticker := time.NewTicker(time.Second * 15)
 	// Setup go routine for periodically sync
+	ticker := time.NewTicker(time.Second * 15)
 	go func() {
 		shard := 0
 
 		for t := range ticker.C {
 			shard += 1
 
-			log.Println("Syncing at", t, "for shard", shard)
+			log.Println("Syncing shard", shard, "at", t)
 
 			var checks []models.Check
 			models.FindChecksByShard(&checks, shard)
 			if checks != nil && len(checks) > 0 {
 				s.PushBulkCheckToClients(checks)
+			} else {
+				log.Println("Found no check for shard", shard)
 			}
 			if shard >= 4 {
 				shard = 0
@@ -71,7 +70,7 @@ func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 			log.Println("Error Fail to create http request", err)
 			continue
 		}
-		_, err := s.httpClient.Do(req)
+		_, err = s.httpClient.Do(req)
 		if err != nil {
 			log.Println("Error fail to push bulk checks to client", err)
 		}

@@ -28,7 +28,7 @@ func (h *HTTPServer) BulkChecks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rawCheck := strings.Split(string(b), "\n")
-	h.scanner.Do(rawCheck)
+	h.scanner.DoMulti(rawCheck)
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "OK")
 }

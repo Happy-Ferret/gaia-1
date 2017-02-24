@@ -122,9 +122,9 @@ func NewScanner(gaiaServerHost string, address types.ClientAddress) *Scanner {
 		Timeout: 15 * time.Second,
 	}
 
-	go s.Sync()
 	go s.Listen()
-	go s.Monitor()
+	// TODO Switch this old monitor to a worker check poll
+	//go s.Monitor()
 
 	return &s
 }

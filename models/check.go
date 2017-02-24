@@ -4,6 +4,7 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"log"
 )
 
 type Check struct {
@@ -58,10 +59,12 @@ func FindChecksAfter(c *[]Check, id bson.ObjectId) error {
 // Find check by split all checks into shard
 func FindChecksByShard(c *[]Check, shard int) error {
 	return mongo.Query(func(session *mgo.Database) error {
-		if t, e := session.C("checks").Count(); e != nil {
-			limit := t/4 + 1
-
-			session.C("checks").Find(nil).Sort("_id").Skip(shard * limit).Limit(limit).All(c)
+		t, e := session.C("checks").Count()
+		log.Println("Total check", t)
+		if e == nil {
+			limit := t / 4
+			session.C("checks").Find(nil).Skip((shard - 1) * limit).All(c)
+			log.Println(c)
 		}
 
 		return nil
