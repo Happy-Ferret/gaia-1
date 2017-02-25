@@ -45,7 +45,7 @@ build-linux-bins: prepare
 prepare:
 	brew install gnu-tar
 	gem install fpm
-	go get ./...
+	#go get ./...
 
 sync:
 	rsync -azvp --exclude '.git' --exclude '*.go' . p-axcoto:gaia
