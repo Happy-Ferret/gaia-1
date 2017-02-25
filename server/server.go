@@ -3,6 +3,8 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"github.com/newrelic/go-agent"
+	"github.com/notyim/gaia/apm"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/config"
 	"github.com/notyim/gaia/db/influxdb"
@@ -58,12 +60,17 @@ func (s *Server) SyncChecks() {
 }
 
 func (s *Server) PushBulkCheckToClients(checks []models.Check) {
+	txn := apm.NewrelicApp.StartTransaction("PushBulkCheckToClient", nil, nil)
+	defer txn.End()
+
 	lines := make([]string, len(checks))
 	for i, check := range checks {
 		lines[i] = fmt.Sprintf("%s,%s,%s", check.ID.Hex(), check.URI, check.Type)
 	}
 	payload := strings.Join(lines, "\n")
+
 	for _, c := range s.Clients {
+		defer newrelic.StartSegment(txn, "HttpClientPost").End()
 		// TODO We will dismiss all this and replica with a TCP with tls
 		req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:28302/bulkchecks", c.Address.IpAddress), bytes.NewBufferString(payload))
 		if err != nil {
@@ -75,13 +82,15 @@ func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 			log.Println("Error fail to push bulk checks to client", err)
 		}
 	}
-
 }
 
 //Push new checks to client
 func (s *Server) PushCheckToClients(check *models.Check) {
 	log.Println("Sync Check", check, "to client")
 	for _, c := range s.Clients {
+		txn := apm.NewrelicApp.StartTransaction("PushCheckToClient", nil, nil)
+		defer txn.End()
+
 		// Implement https for client
 		// TODO We will dismiss all this and replica with a TCP with tls
 		_, err := http.PostForm(fmt.Sprintf("http://%s:28302/checks", c.Address.IpAddress),
