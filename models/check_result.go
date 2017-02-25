@@ -51,7 +51,7 @@ func (c *CheckResult) Point() *client.Point {
 }
 
 func (c *CheckResult) Save() {
-	log.Println("FLush", c, "to InfluxDB")
+	log.Println("FLush", c.CheckID, "to InfluxDB")
 	if err := influxdb.WritePoint(c.Point()); err != nil {
 		log.Println("Cannot write batch points to influxdb", err)
 	}

@@ -60,7 +60,7 @@ func (s *Server) SyncChecks() {
 func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 	lines := make([]string, len(checks))
 	for i, check := range checks {
-		lines[i] = fmt.Sprintf("%s,%s,%s", check.ID, check.URI, check.Type)
+		lines[i] = fmt.Sprintf("%s,%s,%s", check.ID.Hex(), check.URI, check.Type)
 	}
 	payload := strings.Join(lines, "\n")
 	for _, c := range s.Clients {
