@@ -7,6 +7,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
+EnvironmentFile=-/etc/gaia/gaia.conf
 Environment=GAIA_SERVER_HOST=https://gaia.noty.im
 ExecStart=/usr/bin/gaia client
 # allow `systemctl reload gaia`
