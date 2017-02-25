@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	nrgorilla "github.com/newrelic/go-agent/_integrations/nrgorilla/v1"
+	"github.com/notyim/gaia/apm"
 	"github.com/notyim/gaia/types"
 	"io/ioutil"
 	"log"
@@ -55,7 +57,9 @@ func CreateHTTPServer(scanner *Scanner) *HTTPServer {
 
 	s.r.HandleFunc("/checks", s.RegisterCheck).Methods("POST")
 	s.r.HandleFunc("/bulkchecks", s.BulkChecks).Methods("POST")
-	loggedRouter := handlers.LoggingHandler(os.Stdout, s.r)
+
+	instrumentRouter := nrgorilla.InstrumentRoutes(s.r, apm.NewrelicApp)
+	loggedRouter := handlers.LoggingHandler(os.Stdout, instrumentRouter)
 	log.Println(http.ListenAndServe("0.0.0.0:28302", loggedRouter))
 	return &s
 }

@@ -35,8 +35,10 @@ type Server struct {
 // This is poorman changedfeed in MongoDB
 // I wish we can use RethinkDB here
 func (s *Server) SyncChecks() {
-	// Setup go routine for periodically sync
-	ticker := time.NewTicker(time.Second * 15)
+	// We split checks into 10 shards
+	// Every 3 second, we push shards to client
+	// This mean each check will be run every 30 seconds
+	ticker := time.NewTicker(time.Second * 3)
 	go func() {
 		shard := 0
 
@@ -52,7 +54,7 @@ func (s *Server) SyncChecks() {
 			} else {
 				log.Println("Found no check for shard", shard)
 			}
-			if shard >= 4 {
+			if shard >= 10 {
 				shard = 0
 			}
 		}
@@ -70,6 +72,7 @@ func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 	payload := strings.Join(lines, "\n")
 
 	for _, c := range s.Clients {
+		log.Println("Push checks to", c)
 		defer newrelic.StartSegment(txn, "HttpClientPost").End()
 		// TODO We will dismiss all this and replica with a TCP with tls
 		req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:28302/bulkchecks", c.Address.IpAddress), bytes.NewBufferString(payload))

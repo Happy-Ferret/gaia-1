@@ -58,14 +58,13 @@ func (f *Flusher) Write(res *types.HTTPCheckResponse) {
 // post check result to gaia
 func (f *Flusher) Flush(res *types.HTTPCheckResponse) bool {
 	endpoint := fmt.Sprintf("%s/check_results/%s", f.Host, res.CheckID)
-	log.Println("Flush check result", res, "to", endpoint)
+	log.Println("Flush check result", res.CheckID, "to", endpoint)
 
 	body, err := json.Marshal(res)
 	if err != nil {
 		return false
 	}
 
-	log.Println("json body", string(body))
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	_, err = f.client.Do(req)

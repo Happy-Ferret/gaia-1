@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	//"strconv"
 	//"time"
 )
@@ -49,9 +50,22 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
+// TODO:  Detect client ip with trusted proxy
+func findClientIP(r *http.Request) string {
+	proxy := r.RemoteAddr
+	log.Println("Proxy", proxy)
+	if strings.HasPrefix(proxy, "127.0.0.1") == true {
+		return "127.0.0.1"
+	}
+
+	forwardFor := r.Header.Get("X-FORWARDED-FOR")
+	return forwardFor
+}
+
 // Register a client to our internal server state
 func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
-	ip := r.FormValue("ip")
+	ip := findClientIP(r)
+	log.Println("Detect IP", ip)
 	location := r.FormValue("location")
 
 	if ip == "" || location == "" {

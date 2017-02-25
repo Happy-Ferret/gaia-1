@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/notyim/gaia/apm"
 	"github.com/notyim/gaia/types"
 	"golang.org/x/net/http2"
 	"io"
@@ -144,10 +145,14 @@ func (s *Scanner) Listen() {
 
 // One time bulk request process
 func (s *Scanner) DoMulti(rawCheck []string) {
+	txn := apm.NewrelicApp.StartTransaction("DoMulti", nil, nil)
+	defer txn.End()
+
 	for _, line := range rawCheck {
 		c := strings.Split(line, ",")
 		check := types.Check{c[0], c[1], c[2], time.Duration(30) * time.Second}
-		s.Execute(&check)
+		// TODO implement worker pool
+		go s.Execute(&check)
 	}
 }
 
