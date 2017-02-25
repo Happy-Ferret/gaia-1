@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	nrgorilla "github.com/newrelic/go-agent/_integrations/nrgorilla/v1"
+	"github.com/notyim/gaia/apm"
 	"github.com/notyim/gaia/client"
 	"github.com/notyim/gaia/models"
 	"github.com/notyim/gaia/types"
@@ -22,8 +24,9 @@ type HTTPServer struct {
 }
 
 func (h *HTTPServer) Start(bindTo string) {
-	loggedRouter := handlers.LoggingHandler(os.Stdout, h.r)
-	if err := http.ListenAndServe(bindTo, loggedRouter); err != nil {
+	instrumentRouter := nrgorilla.InstrumentRoutes(h.r, apm.NewrelicApp)
+	loggedrouter := handlers.LoggingHandler(os.Stdout, instrumentRouter)
+	if err := http.ListenAndServe(bindTo, loggedrouter); err != nil {
 		log.Fatal("Error: Gaia HTTP server error", err)
 	}
 }
@@ -103,7 +106,7 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "OK")
 }
 
-// Run the whole client
+// gun the whole client
 // Register route, initalize client, syncing
 func CreateHTTPServer(server *Server, flusher *Flusher) *HTTPServer {
 	s := HTTPServer{
