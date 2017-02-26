@@ -134,7 +134,7 @@ func NewServer(c *config.Config) *Server {
 	s := Server{
 		config: c,
 		httpClient: &http.Client{
-			timeout: 15,
+			Timeout: 15,
 		},
 	}
 
