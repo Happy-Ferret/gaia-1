@@ -132,8 +132,10 @@ func Start(c *config.Config) {
 
 func NewServer(c *config.Config) *Server {
 	s := Server{
-		config:     c,
-		httpClient: &http.Client{},
+		config: c,
+		httpClient: &http.Client{
+			timeout: 15,
+		},
 	}
 
 	h := CreateHTTPServer(&s, NewFlusher())
