@@ -108,4 +108,4 @@ release: build-linux-bins build-deb-systemd github-release upload-package
 
 # Production task
 ssh-deploy:
-	ssh noty "sudo systemctl stop gaia; sudo curl -L https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o $(PRODUCTION_PATH);sudo chmod 700 $(PRODUCTION_PATH); sudo systemctl daemon-reload; sudo systemctl restart gaia"
+	ssh noty "sudo systemctl stop gaia; sudo curl -L https://github.com/NotyIm/gaia/releases/download/$(CURRENT_VERSION)/gaia-linux -o $(PRODUCTION_PATH);sudo chmod 700 $(PRODUCTION_PATH); sudo systemctl daemon-reload; sudo systemctl start gaia"

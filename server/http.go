@@ -54,6 +54,7 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 func findClientIP(r *http.Request) string {
 	proxy := r.RemoteAddr
 	log.Println("Proxy", proxy)
+	log.Println("Gaia header", r.Header)
 	forwardFor := r.Header.Get("X-FORWARDED-FOR")
 	if forwardFor == "" {
 		if strings.HasPrefix(proxy, "127.0.0.1") == true {
