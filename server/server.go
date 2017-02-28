@@ -11,6 +11,7 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
+	"net/dialer"
 	"net/http"
 	"net/url"
 	"os"
@@ -132,10 +133,18 @@ func Start(c *config.Config) {
 }
 
 func NewServer(c *config.Config) *Server {
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 5 * time.Second,
+	}
+
 	s := Server{
 		config: c,
 		httpClient: &http.Client{
-			Timeout: 30,
+			Timeout:   30 * time.Second,
+			Transport: netTransport,
 		},
 	}
 
