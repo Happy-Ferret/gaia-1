@@ -70,6 +70,7 @@ func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 		lines[i] = fmt.Sprintf("%s,%s,%s", check.ID.Hex(), check.URI, check.Type)
 	}
 	payload := strings.Join(lines, "\n")
+	log.Println("Check payload to push", payload)
 
 	for _, c := range s.Clients {
 		log.Println("Push checks to", c)
@@ -134,7 +135,7 @@ func NewServer(c *config.Config) *Server {
 	s := Server{
 		config: c,
 		httpClient: &http.Client{
-			Timeout: 15,
+			Timeout: 30,
 		},
 	}
 

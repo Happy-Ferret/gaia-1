@@ -62,9 +62,12 @@ func FindChecksByShard(c *[]Check, shard int) error {
 		t, e := session.C("checks").Count()
 		log.Println("Total check", t)
 		if e == nil {
-			limit := t / 4
-			session.C("checks").Find(nil).Skip((shard - 1) * limit).All(c)
-			log.Println(c)
+			limit := t / 10
+			if limit < 1 {
+				limit = 1
+			}
+			session.C("checks").Find(nil).Skip((shard - 1) * limit).Limit(limit).All(c)
+			log.Println("Shard", shard, c)
 		}
 
 		return nil

@@ -30,6 +30,8 @@ func (h *HTTPServer) BulkChecks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rawCheck := strings.Split(string(b), "\n")
+	log.Println("Check Payload", rawCheck)
+
 	h.scanner.DoMulti(rawCheck)
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprintf(w, "OK")
