@@ -11,7 +11,7 @@ import (
 	"github.com/notyim/gaia/db/mongo"
 	"github.com/notyim/gaia/models"
 	"log"
-	"net/dialer"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
