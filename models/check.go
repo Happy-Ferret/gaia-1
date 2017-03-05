@@ -66,6 +66,8 @@ func FindChecksByShard(c *[]Check, shard int) error {
 			if limit < 1 {
 				limit = 1
 			}
+			limit++
+
 			session.C("checks").Find(nil).Skip((shard - 1) * limit).Limit(limit).All(c)
 			log.Println("Shard", shard, c)
 		}
