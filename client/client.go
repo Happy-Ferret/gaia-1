@@ -13,6 +13,7 @@ import (
 )
 
 type Client struct {
+	Lastping       time.Time
 	Address        types.ClientAddress
 	GaiaServerHost string
 	httpClient     *http.Client

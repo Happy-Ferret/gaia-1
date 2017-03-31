@@ -15,7 +15,7 @@ import (
 	"os"
 	"strings"
 	//"strconv"
-	//"time"
+	"time"
 )
 
 type HTTPServer struct {
@@ -44,7 +44,7 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 	lines := ""
 	for _, c := range h.server.Clients {
 		log.Printf("Existing clients %v\n", h.server.Clients)
-		lines += fmt.Sprintf("IP: %s Location: %s\n", c.Address.IpAddress, c.Address.Location)
+		lines += fmt.Sprintf("%s: %s Lastping %s\n", c.Address.IpAddress, c.Address.Location, c.Lastping)
 	}
 	fmt.Fprintf(w, lines)
 	w.WriteHeader(200)
@@ -76,6 +76,7 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := client.Client{
+		Lastping: time.Now(),
 		Address: types.ClientAddress{
 			IpAddress: ip,
 			Location:  location,
@@ -83,6 +84,7 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, c := range h.server.Clients {
 		if c.Address.IpAddress == client.Address.IpAddress {
+			c.Lastping = client.Lastping
 			w.WriteHeader(http.StatusAlreadyReported)
 			return
 		}

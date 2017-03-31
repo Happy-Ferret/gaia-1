@@ -28,6 +28,8 @@ run_server:
 	source ./dotenv && ./gaia server
 run_client:
 	source ./dotenv && ENV=LOCAL GAIA_SERVER_HOST=http://127.0.0.1:28300 ./gaia client
+run_client2:
+	source ./dotenv && ENV=LOCAL GAIA_SERVER_HOST=http://192.168.1.112:28300 ./gaia client
 
 # Build with race detector
 dev: prepare
