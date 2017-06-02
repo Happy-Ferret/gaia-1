@@ -44,7 +44,7 @@ func (h *HTTPServer) ListClient(w http.ResponseWriter, r *http.Request) {
 	lines := ""
 	for _, c := range h.server.Clients {
 		log.Printf("Existing clients %v\n", h.server.Clients)
-		lines += fmt.Sprintf("%s: %s Lastping %s\n", c.Address.IpAddress, c.Address.Location, c.Lastping)
+		lines += fmt.Sprintf("%s: %s Last ping %s\n\n", c.Address.IpAddress, c.Address.Location, c.Lastping)
 	}
 	fmt.Fprintf(w, lines)
 	w.WriteHeader(200)
@@ -75,19 +75,17 @@ func (h *HTTPServer) RegisterClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if c := h.server.findClientByIp(ip); c != nil {
+		w.WriteHeader(http.StatusAlreadyReported)
+		return
+	}
+
 	client := client.Client{
 		Lastping: time.Now(),
 		Address: types.ClientAddress{
 			IpAddress: ip,
 			Location:  location,
 		},
-	}
-	for _, c := range h.server.Clients {
-		if c.Address.IpAddress == client.Address.IpAddress {
-			c.Lastping = client.Lastping
-			w.WriteHeader(http.StatusAlreadyReported)
-			return
-		}
 	}
 	h.server.Clients = append(h.server.Clients, &client)
 
@@ -121,6 +119,9 @@ func (h *HTTPServer) CreateCheckResult(w http.ResponseWriter, r *http.Request) {
 	h.flusher.Write(&checkResult)
 
 	w.WriteHeader(http.StatusAccepted)
+
+	go h.server.pingFromIp(findClientIP(r))
+
 	fmt.Fprintf(w, "OK")
 }
 

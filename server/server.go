@@ -89,6 +89,23 @@ func (s *Server) PushBulkCheckToClients(checks []models.Check) {
 	}
 }
 
+func (s *Server) findClientByIp(ip string) *client.Client {
+	for _, c := range s.Clients {
+		if c.Address.IpAddress == ip {
+			return c
+		}
+	}
+	return nil
+}
+
+func (s *Server) pingFromIp(ip string) *client.Client {
+	if c := s.findClientByIp(ip); c != nil {
+		c.Lastping = time.Now()
+		return c
+	}
+	return nil
+}
+
 //Push new checks to client
 func (s *Server) PushCheckToClients(check *models.Check) {
 	log.Println("Sync Check", check, "to client")
